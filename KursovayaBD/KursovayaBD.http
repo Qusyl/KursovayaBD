@@ -1,0 +1,6 @@
+@KursovayaBD_HostAddress = http://localhost:5005
+
+GET {{KursovayaBD_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
