@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace KursovayaBD.Models
 {
     [Table("ownings",Schema ="public")]
-    public class SalesModel
+    public class OwningsModel
     {
         [Key]
         [Required]
