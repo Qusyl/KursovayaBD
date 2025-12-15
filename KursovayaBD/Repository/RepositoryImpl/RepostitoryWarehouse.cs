@@ -1,39 +1,47 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
     public class RepostitoryWarehouse : IRepositoryBase<WarehouseModel>
     {
-        public Task<IEnumerable<WarehouseModel>> FindAsync(Expression<Func<WarehouseModel, bool>> predicate)
+        private readonly AppDbContext context;
+        private readonly DbSet<WarehouseModel> dbSet;
+
+        public async Task<IEnumerable<WarehouseModel>> FindAsync(Expression<Func<WarehouseModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<IEnumerable<WarehouseModel>> GetAllAsync()
+        public async Task<IEnumerable<WarehouseModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.ToListAsync();
         }
 
-        public Task<WarehouseModel> GetByIdAsync(int id)
+        public async Task<WarehouseModel> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbSet.FirstOrDefaultAsync(wm => wm.Id == id);
         }
 
-        public Task<bool> InsertAsync(WarehouseModel entity)
+        public async Task InsertAsync(WarehouseModel entity)
         {
-            throw new NotImplementedException();
+           await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
         }
 
-        public void RemoveByIdAsync(int id)
+        public void RemoveAsync(WarehouseModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(entity);
+            context.SaveChanges();
         }
 
-        public void Update(int id, WarehouseModel entity)
+        public void Update(WarehouseModel entity)
         {
-            throw new NotImplementedException();
+           dbSet.Update(entity);
+            context.SaveChanges();
         }
     }
 }

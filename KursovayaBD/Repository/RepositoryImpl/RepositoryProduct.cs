@@ -1,39 +1,46 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
     public class RepositoryProduct : IRepositoryBase<ProductModel>
     {
-        public Task<IEnumerable<ProductModel>> FindAsync(Expression<Func<ProductModel, bool>> predicate)
+        private readonly AppDbContext context;
+        private readonly DbSet<ProductModel> dbSet;
+        public async Task<IEnumerable<ProductModel>> FindAsync(Expression<Func<ProductModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<IEnumerable<ProductModel>> GetAllAsync()
+        public async Task<IEnumerable<ProductModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+           return await dbSet.ToListAsync();
         }
 
-        public Task<ProductModel> GetByIdAsync(int id)
+        public async Task<ProductModel> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbSet.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public Task<bool> InsertAsync(ProductModel entity)
+        public async Task InsertAsync(ProductModel entity)
         {
-            throw new NotImplementedException();
+            await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
         }
 
-        public void RemoveByIdAsync(int id)
+        public void RemoveAsync(ProductModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(entity);
+            context.SaveChanges();
         }
 
-        public void Update(int id, ProductModel entity)
+        public void Update(ProductModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Update(entity);
+            context.SaveChanges();
         }
     }
 }

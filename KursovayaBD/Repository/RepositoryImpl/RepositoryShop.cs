@@ -1,39 +1,48 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
     public class RepositoryShop : IRepositoryBase<ShopModel>
     {
-        public Task<IEnumerable<ShopModel>> FindAsync(Expression<Func<ShopModel, bool>> predicate)
+        private readonly AppDbContext context;
+        private readonly DbSet<ShopModel> dbSet;
+        public async Task<IEnumerable<ShopModel>> FindAsync(Expression<Func<ShopModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<IEnumerable<ShopModel>> GetAllAsync()
+        public async Task<IEnumerable<ShopModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.ToListAsync();
         }
 
-        public Task<ShopModel> GetByIdAsync(int id)
+        public async Task<ShopModel> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbSet.FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public Task<bool> InsertAsync(ShopModel entity)
+        public async Task InsertAsync(ShopModel entity)
         {
-            throw new NotImplementedException();
+           await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
         }
 
-        public void RemoveByIdAsync(int id)
+        public void RemoveAsync(ShopModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(entity);
+            context.SaveChanges();
         }
 
-        public void Update(int id, ShopModel entity)
+        public void Update(ShopModel entity)
         {
-            throw new NotImplementedException();
+           dbSet.Update (entity);
+
+            context.SaveChanges ();
         }
     }
+
 }

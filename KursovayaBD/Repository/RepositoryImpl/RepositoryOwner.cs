@@ -1,39 +1,48 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
     public class RepositoryOwner : IRepositoryBase<OwnerModel>
     {
-        public Task<IEnumerable<OwnerModel>> FindAsync(Expression<Func<OwnerModel, bool>> predicate)
+        private readonly AppDbContext context;
+
+        private readonly DbSet<OwnerModel> dbSet;   
+        public async Task<IEnumerable<OwnerModel>> FindAsync(Expression<Func<OwnerModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+           return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<IEnumerable<OwnerModel>> GetAllAsync()
+        public async Task<IEnumerable<OwnerModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return  await dbSet.ToListAsync();
         }
 
-        public Task<OwnerModel> GetByIdAsync(int id)
+        public async Task<OwnerModel> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+           return await dbSet.FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        public Task<bool> InsertAsync(OwnerModel entity)
+        public async Task InsertAsync(OwnerModel entity)
         {
-            throw new NotImplementedException();
+           await dbSet.AddAsync(entity);
+           await context.SaveChangesAsync();
         }
 
-        public void RemoveByIdAsync(int id)
+        public void RemoveAsync(OwnerModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(entity);
+            context.SaveChangesAsync();
         }
 
-        public void Update(int id, OwnerModel entity)
+        public void Update(OwnerModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Update(entity);
+            context.SaveChanges();
         }
     }
 }

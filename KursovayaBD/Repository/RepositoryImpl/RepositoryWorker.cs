@@ -1,39 +1,46 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
     public class RepositoryWorker : IRepositoryBase<WorkerModel>
     {
-        public Task<IEnumerable<WorkerModel>> FindAsync(Expression<Func<WorkerModel, bool>> predicate)
+        private readonly AppDbContext context;
+        private readonly DbSet<WorkerModel> dbSet;
+        public async Task<IEnumerable<WorkerModel>> FindAsync(Expression<Func<WorkerModel, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await dbSet.Where(predicate).ToListAsync();
         }
 
-        public Task<IEnumerable<WorkerModel>> GetAllAsync()
+        public async Task<IEnumerable<WorkerModel>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.ToListAsync();
         }
 
-        public Task<WorkerModel> GetByIdAsync(int id)
+        public async Task<WorkerModel> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbSet.FirstOrDefaultAsync(w => w.Id == id);
         }
 
-        public Task<bool> InsertAsync(WorkerModel entity)
+        public async Task InsertAsync(WorkerModel entity)
         {
-            throw new NotImplementedException();
+            await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
         }
 
-        public void RemoveByIdAsync(int id)
+        public void RemoveAsync(WorkerModel entity)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(entity);
+            context.SaveChanges();
         }
 
-        public void Update(int id, WorkerModel entity)
+        public void Update(WorkerModel entity)
         {
-            throw new NotImplementedException();
+          dbSet.Update(entity);
+            context.SaveChanges();
         }
     }
 }
