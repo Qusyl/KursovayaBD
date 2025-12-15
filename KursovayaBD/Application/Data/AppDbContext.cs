@@ -1,7 +1,8 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application.Services;
+using KursovayaBD.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace KursovayaBD.Application
+namespace KursovayaBD.Application.Data
 {
     public class AppDbContext : DbContext
     {
@@ -23,6 +24,8 @@ namespace KursovayaBD.Application
         public DbSet<ProductModel> Products { get; set; }
 
         public DbSet<WorkerModel> Workers { get; set; }
+
+        public DbSet<WorkerWithShops> WorkerWithShops { get; set; }
         public DbSet<WarehouseModel> Warehouses { get; set; }
         public DbSet<SalesModel> Sales { get; set; }
 

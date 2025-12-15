@@ -1,4 +1,4 @@
-﻿using KursovayaBD.Application;
+﻿using KursovayaBD.Application.Data;
 using KursovayaBD.Models;
 using KursovayaBD.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;

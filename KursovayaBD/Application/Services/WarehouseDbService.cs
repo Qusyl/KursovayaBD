@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KursovayaBD.Application.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace KursovayaBD.Application.Services
 {
