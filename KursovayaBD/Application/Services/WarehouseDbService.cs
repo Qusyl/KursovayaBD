@@ -1,33 +1,37 @@
 ﻿using KursovayaBD.Application.Data;
+using KursovayaBD.Application.Services.IService;
 using Microsoft.EntityFrameworkCore;
 
 namespace KursovayaBD.Application.Services
 {
-    public class WarehouseDbService
+    public class WarehouseDbService : IWarehouseService
     {
         private readonly AppDbContext _context;
 
-        public WarehouseDbService(AppDbContext context)
+        public WarehouseDbService(AppDbContext context) => _context = context;
+        public async Task<int> CheckTotalProductInStockAsync(int shopId)
         {
-            _context = context;
+          try
+            {
+                await using var command = _context.Database.GetDbConnection().CreateCommand();
+
+                command.CommandText = $"SELECT check_total_product_in_stock({shopId})";
+
+                if(command.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    await command.Connection.OpenAsync();
+
+                }
+
+                var result = await command.ExecuteScalarAsync();
+
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckTotalProductInStockAsync: {ex.Message}");
+                return 0;
+            }
         }
-
-        public async Task<int?> GetTotalProductsInStock(int shopId)
-        {
-            return await _context.Warehouses
-                .Where(w => w.Shop == shopId)
-                .GroupBy(w => w.Shop)
-                .Select(g => _context.CheckTotalProductInStock(shopId))
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<string> AddWarehouseIfStockAccessible(int w_id, int w_shop, int w_product, string w_product_name, int in_stock)
-        {
-            var result = await _context.Database.SqlQuery<string>($"SELECT add_warehouse_if_stock_accessible({w_id},{w_shop},{w_product},{w_product_name},{in_stock})").FirstOrDefaultAsync();
-            return result ?? $"неизвестный результат - метод {nameof(AddWarehouseIfStockAccessible)}";
-        }
-
-
-
     }
 }

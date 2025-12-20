@@ -1,4 +1,6 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application.Services;
+using KursovayaBD.Application.Services.IService;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +12,34 @@ namespace KursovayaBD.Controllers
     {
     
         private readonly RepositorySales repository;
-
-        public SalesController(RepositorySales repository)
+        private readonly ISalesService salesService;
+        public SalesController(
+        RepositorySales repository,
+        ISalesService salesService)
         {
             this.repository = repository;
+            this.salesService = salesService;
         }
-
+        [HttpGet("best-profit-products-count")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBestProfitProductsCount()
+        {
+            try
+            {
+                var count = await salesService.GetNumProductsWithBestProfitAsync();
+                return Ok(new
+                {
+                    Count = count,
+                    Description = $"Количество продуктов с прибылью ≥ 1,800,000",
+                    Threshold = 1800000
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка: {ex.Message}");
+            }
+        }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<SalesModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -1,9 +1,11 @@
 ﻿using KursovayaBD.Application.Data;
+using KursovayaBD.Application.Services.IService;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KursovayaBD.Application.Services
 {
-    public class WorkerDbService
+    public class WorkerDbService : IWorkerService
     {
         private readonly AppDbContext _context;
 
@@ -15,16 +17,22 @@ namespace KursovayaBD.Application.Services
         }  
     }
     [Keyless]
-   public class WorkerWithShops
+    public class WorkerWithShops
     {
+       
+        [Column("worker_id")]
         public int Id { get; set; }
-        public string Name { get; set; }    
 
-        public string Surname { get; set; }
+        [Column("worker_name")]
+        public string Name { get; set; } = string.Empty;
 
-        public string Lastname { get; set; }    
+        [Column("worker_surname")]
+        public string Surname { get; set; } = string.Empty;
 
-        public string ShopName { get; set; }    
+        [Column("worker_lastname")]
+        public string Lastname { get; set; } = string.Empty;
 
+        [Column("shop_name")]
+        public string ShopName { get; set; } = string.Empty;
     }
 }

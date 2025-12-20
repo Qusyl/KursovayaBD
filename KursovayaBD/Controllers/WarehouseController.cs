@@ -1,4 +1,6 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application.Services;
+using KursovayaBD.Application.Services.IService;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +11,37 @@ namespace KursovayaBD.Controllers
     public class WarehouseController : ControllerBase
     {
         private readonly RepositoryWarehouse repository;
+        private readonly IWarehouseService warehouseService;
 
-        public WarehouseController(RepositoryWarehouse repository)
+        public WarehouseController(
+        RepositoryWarehouse repository,
+        IWarehouseService warehouseService)
         {
             this.repository = repository;
+            this.warehouseService = warehouseService;
         }
-
+        [HttpGet("total-stock/{shopId}")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetTotalStock(int shopId)
+        {
+            try
+            {
+                var totalStock = await warehouseService.CheckTotalProductInStockAsync(shopId);
+                return Ok(new
+                {
+                    ShopId = shopId,
+                    TotalProductsInStock = totalStock,
+                    Message = totalStock >= 2000 ?
+                        "Внимание: достигнут максимальный лимит склада (2000)" :
+                        $"Доступно места: {2000 - totalStock}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка: {ex.Message}");
+            }
+        }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<WarehouseModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -94,7 +121,7 @@ namespace KursovayaBD.Controllers
                 {
                     return NotFound($"Не существует склада с таким Id [{id}]");
                 }
-                await repository.UpdateAsync(warehouse);
+               await repository.UpdateAsync(warehouse);
                 return NoContent();
             }
             catch (Exception ex)
@@ -115,7 +142,7 @@ namespace KursovayaBD.Controllers
                 {
                     return BadRequest($"Не найдено склада с Id = [{id}]");
                 }
-                await repository.RemoveAsync(warehouse);
+                repository.RemoveAsync(warehouse);
                 return NoContent();
             }
             catch (Exception ex)

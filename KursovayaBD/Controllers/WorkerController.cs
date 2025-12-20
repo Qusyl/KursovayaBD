@@ -1,4 +1,6 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application.Services;
+using KursovayaBD.Application.Services.IService;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +12,46 @@ namespace KursovayaBD.Controllers
     public class WorkerController : ControllerBase
     {
         private readonly RepositoryWorker repository;
+        private readonly IWorkerService workerService;
 
-        public WorkerController(RepositoryWorker repository)
+        public WorkerController(RepositoryWorker repository, IWorkerService _workerService)
         {
             this.repository = repository;
+            this.workerService = _workerService;
         }
+        [HttpGet("workers-with-shops")]
+        [ProducesResponseType(typeof(IEnumerable<WorkerWithShops>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetWorkersWithShop()
+        {
+            try
+            {
+                var workers = await workerService.GetWorkersWithShopAsync();
 
+                if (!workers.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Работники с магазинами не найдены",
+                        Count = 0
+                    });
+                }
+
+                return Ok(new
+                {
+                    Count = workers.Count(),
+                    Workers = workers
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Error = "Ошибка при получении данных о работниках с магазинами",
+                    Details = ex.Message
+                });
+            }
+        }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<WorkerModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -191,7 +227,7 @@ namespace KursovayaBD.Controllers
 
                 return Ok(worker);
             }
-            catch (Exception ex)
+            catch (Exception ex)    
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка поиска : {ex.Message}");
             }

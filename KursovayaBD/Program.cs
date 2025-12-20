@@ -1,4 +1,6 @@
 using KursovayaBD.Application.Data;
+using KursovayaBD.Application.Services;
+using KursovayaBD.Application.Services.IService;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +25,11 @@ builder.Services.AddScoped<RepositoryProductAudit>();
 builder.Services.AddScoped<RepositoryProduct>();
 builder.Services.AddScoped<RepositoryWarehouse>();
 
+
+builder.Services.AddScoped<ISalesService, SalesDbSevice>();
+builder.Services.AddScoped<IWarehouseService, WarehouseDbService>();
+builder.Services.AddScoped<IOwnerService,OwnerDbService>();
+builder.Services.AddScoped<IWorkerService,WorkerDbService>();
 
 builder.Services.AddControllers();
 

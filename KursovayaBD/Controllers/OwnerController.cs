@@ -1,4 +1,6 @@
-﻿using KursovayaBD.Models;
+﻿using KursovayaBD.Application.Services;
+using KursovayaBD.Application.Services.IService;
+using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +11,45 @@ namespace KursovayaBD.Controllers
     public class OwnerController : ControllerBase
     {
         private readonly RepositoryOwner repository;
+        private readonly IOwnerService ownerService;
 
-        public OwnerController(RepositoryOwner repository)
+        public OwnerController(
+            RepositoryOwner repository,
+            IOwnerService ownerService)
         {
             this.repository = repository;
+            this.ownerService = ownerService;
         }
+        [HttpGet("non-profit-shops")]
+        [ProducesResponseType(typeof(IEnumerable<OwnerWithNonProfitShopResult>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetOwnersWithNonProfitShops()
+        {
+            try
+            {
+                var owners = await ownerService.GetOwnersWithNonProfitShopsAsync();
 
+                if (!owners.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Нет владельцев с магазинами, имеющими прибыль ≥ 2,500,000",
+                        Threshold = 2500000
+                    });
+                }
+
+                return Ok(new
+                {
+                    Count = owners.Count,
+                    Threshold = 2500000,
+                    Owners = owners
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка: {ex.Message}");
+            }
+        }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<OwnerModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

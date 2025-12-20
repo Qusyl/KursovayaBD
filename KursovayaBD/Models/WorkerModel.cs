@@ -34,10 +34,5 @@ namespace KursovayaBD.Models
 
         [Column("avatar", TypeName = "xml")]
         public string Avatar { get; set; } = string.Empty;
-
-       
-      
-
-    
     }
 }
