@@ -24,34 +24,34 @@ namespace KursovayaBD.Models
 
         [Column("old_name")]
         [MaxLength(10)]
-        public string OldName { get; set; } 
+        public string? OldName { get; set; } 
 
         [Column("new_name")]
         [MaxLength(10)]
 
-        public string NewName { get; set; } 
+        public string? NewName { get; set; }
 
         [Column("old_price")]
-        public decimal OldPrice { get; set; }
+        public decimal? OldPrice { get; set; }
 
         [Column("new_price")]
-        public decimal NewPrice { get; set; }
+        public decimal? NewPrice { get; set; }
 
         [Column("old_producer")]
         [MaxLength(50)]
-        public string OldProducer { get; set; }
+        public string? OldProducer { get; set; }
 
         [Column("new_producer")]
         [MaxLength(100)]
-        public string NewProducer { get; set; }
+        public string? NewProducer { get; set; }
 
         [Column("old_category")]
         [MaxLength(50)]
-        public string OldCategory { get; set; }
+        public string? OldCategory { get; set; }
 
         [Column("new_category")]
         [MaxLength(50)]
-        public string NewCategory { get; set; }
+        public string? NewCategory { get; set; }
 
 
     }

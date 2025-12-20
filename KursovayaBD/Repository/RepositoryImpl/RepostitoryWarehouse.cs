@@ -6,10 +6,17 @@ using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
-    public class RepostitoryWarehouse : IRepositoryBase<WarehouseModel>
+    public class RepositoryWarehouse : IRepositoryBase<WarehouseModel>
     {
         private readonly AppDbContext context;
         private readonly DbSet<WarehouseModel> dbSet;
+
+        public RepositoryWarehouse(AppDbContext Context)
+        {
+            context = Context;
+
+            dbSet = context.Set<WarehouseModel>();
+        }
 
         public async Task<IEnumerable<WarehouseModel>> FindAsync(Expression<Func<WarehouseModel, bool>> predicate)
         {
@@ -32,16 +39,21 @@ namespace KursovayaBD.Repository.RepositoryImpl
             await context.SaveChangesAsync();
         }
 
-        public void RemoveAsync(WarehouseModel entity)
+        public async Task RemoveAsync(WarehouseModel entity)
         {
             dbSet.Remove(entity);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-        public void Update(WarehouseModel entity)
+        public async Task UpdateAsync(WarehouseModel entity)
         {
-           dbSet.Update(entity);
-            context.SaveChanges();
+
+            var existing = await dbSet.FindAsync(entity.Id);
+            if (existing != null)
+            {
+                context.Entry(existing).CurrentValues.SetValues(entity);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

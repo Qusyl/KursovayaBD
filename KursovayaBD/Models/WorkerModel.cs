@@ -13,6 +13,7 @@ namespace KursovayaBD.Models
 
         [Required]
         [Column("shop")]
+        
         public int Shop { get; set; }
 
         [Column("worker_name")]
@@ -31,11 +32,11 @@ namespace KursovayaBD.Models
         [MaxLength(12)]
         public string Phone { get; set; } = string.Empty;
 
-        [Column("avatar")]
+        [Column("avatar", TypeName = "xml")]
         public string Avatar { get; set; } = string.Empty;
 
-        [ForeignKey("fk_shop")]
-        public ShopModel ShopFK { get; set; } = null!;
+       
+      
 
     
     }

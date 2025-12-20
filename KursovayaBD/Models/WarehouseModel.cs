@@ -13,10 +13,12 @@ namespace KursovayaBD.Models
 
         [Required]
         [Column("shop")]
+    
         public int Shop {  get; set; }
 
         [Required]
         [Column("product")]
+        
         public int Product { get; set; }
 
         [Column("product_name")]
@@ -27,11 +29,7 @@ namespace KursovayaBD.Models
         [Column("in_stock")]
         public int InStock { get; set; } = 0;
 
-        [ForeignKey("fk_shop")]
-        public ShopModel ShopFK { get; set; } = null!;
-
-        [ForeignKey("fk_product")]
-        public ProductModel ProductFK { get; set; } = null!;
+    
 
     }
 }

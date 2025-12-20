@@ -1,49 +1,46 @@
 ﻿using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using System.Security.Cryptography.X509Certificates;
 
 namespace KursovayaBD.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ShopController : ControllerBase
+    public class WarehouseController : ControllerBase
     {
-        private readonly RepositoryShop repository;
+        private readonly RepositoryWarehouse repository;
 
-        public ShopController(RepositoryShop repository)
+        public WarehouseController(RepositoryWarehouse repository)
         {
             this.repository = repository;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ShopModel>), statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<WarehouseModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAllShops()
+        public async Task<IActionResult> GetAllWarehouse()
         {
             try
             {
-                var shops = await repository.GetAllAsync();
-                return Ok(shops);
+                var warehouse = await repository.GetAllAsync();
+                return Ok(warehouse);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка во время получения данных о магазинах! {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка во время получения данных о складах! {ex.Message}");
             }
         }
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ShopModel), statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(WarehouseModel), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetShopById(int id)
+        public async Task<IActionResult> GetWarehouseById(int id)
         {
             try
             {
-                var shop = await repository.GetByIdAsync(id);
-                if (shop == null) { return NotFound($"Не найдено : Магазин с id = {id}"); }
-                return Ok(shop);
+                var warehouse = await repository.GetByIdAsync(id);
+                if (warehouse == null) { return NotFound($"Не найдено : Склада с id = {id}"); }
+                return Ok(warehouse);
             }
             catch (Exception ex)
             {
@@ -53,11 +50,11 @@ namespace KursovayaBD.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ShopModel), statusCode: StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(WarehouseModel), statusCode: StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> InsertShop([FromBody] ShopModel shop)
+        public async Task<IActionResult> InsertShop([FromBody] WarehouseModel warehouse)
         {
             if (!ModelState.IsValid)
             {
@@ -65,8 +62,8 @@ namespace KursovayaBD.Controllers
             }
             try
             {
-                await repository.InsertAsync(shop);
-                return CreatedAtAction(nameof(GetShopById), new { id = shop.Id }, shop);
+                await repository.InsertAsync(warehouse);
+                return CreatedAtAction(nameof(GetWarehouseById), new { id = warehouse.Id }, warehouse);
             }
             catch (Exception ex)
             {
@@ -80,9 +77,9 @@ namespace KursovayaBD.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> UpdateShop(int id, [FromBody] ShopModel shop)
+        public async Task<IActionResult> UpdateShop(int id, [FromBody] WarehouseModel warehouse)
         {
-            if (id != shop.Id)
+            if (id != warehouse.Id)
             {
                 return BadRequest("Url ID совпадает с ID в теле запроса");
             }
@@ -92,12 +89,12 @@ namespace KursovayaBD.Controllers
             }
             try
             {
-                var existingShop = await repository.GetByIdAsync(id);
-                if (existingShop == null)
+                var existingWarehouse = await repository.GetByIdAsync(id);
+                if (existingWarehouse == null)
                 {
-                    return NotFound($"Не существует магазина с таким Id [{id}]");
+                    return NotFound($"Не существует склада с таким Id [{id}]");
                 }
-                await repository.UpdateAsync(shop);
+                await repository.UpdateAsync(warehouse);
                 return NoContent();
             }
             catch (Exception ex)
@@ -109,16 +106,16 @@ namespace KursovayaBD.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RemoveShop(int id)
+        public async Task<IActionResult> RemoveWarehouse(int id)
         {
             try
             {
-                var shop = await repository.GetByIdAsync(id);
-                if (shop == null)
+                var warehouse = await repository.GetByIdAsync(id);
+                if (warehouse == null)
                 {
-                    return BadRequest($"Не найдено магазин с Id = [{id}]");
+                    return BadRequest($"Не найдено склада с Id = [{id}]");
                 }
-                await repository.RemoveAsync(shop);
+                await repository.RemoveAsync(warehouse);
                 return NoContent();
             }
             catch (Exception ex)
@@ -129,9 +126,9 @@ namespace KursovayaBD.Controllers
             }
         }
         [HttpGet("search")]
-        [ProducesResponseType(typeof(IEnumerable<ShopModel>), statusCode: StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<WarehouseModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SearchShops([FromQuery] string name)
+        public async Task<IActionResult> SearchWarehouse([FromQuery] string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -139,7 +136,7 @@ namespace KursovayaBD.Controllers
             }
             try
             {
-                var shops = await repository.FindAsync(s => s.ShopName != null && s.ShopName.Contains(name));
+                var shops = await repository.FindAsync(w => w.ProductName != null && w.ProductName.Contains(name));
 
                 return Ok(shops);
             }

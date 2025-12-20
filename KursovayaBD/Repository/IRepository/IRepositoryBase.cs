@@ -6,11 +6,11 @@ namespace KursovayaBD.Repository.IRepository
     {
         Task InsertAsync(T entity);
 
-        void RemoveAsync(T entity);
+        Task RemoveAsync(T entity);
 
         Task<T> GetByIdAsync(int id);
 
-        void Update(T entity);
+        Task UpdateAsync(T entity);
 
         Task<IEnumerable<T>> GetAllAsync();
 

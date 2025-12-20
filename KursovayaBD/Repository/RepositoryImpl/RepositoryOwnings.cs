@@ -6,42 +6,53 @@ using System.Linq.Expressions;
 
 namespace KursovayaBD.Repository.RepositoryImpl
 {
-    public class RepositoryOwnings : IRepositoryBase<SalesModel>
+    public class RepositoryOwnings : IRepositoryBase<OwningsModel>
     {
         private readonly AppDbContext context;
-        private readonly DbSet<SalesModel> dbSet;
-        public async Task<IEnumerable<SalesModel>> FindAsync(Expression<Func<SalesModel, bool>> predicate)
+        private readonly DbSet<OwningsModel> dbSet;
+
+        public RepositoryOwnings(AppDbContext Context)
+        {
+            context = Context;
+            dbSet = context.Set<OwningsModel>();
+        }
+
+        public async Task<IEnumerable<OwningsModel>> FindAsync(Expression<Func<OwningsModel, bool>> predicate)
         {
             return await dbSet.Where(predicate).ToListAsync();    
         }
 
-        public async Task<IEnumerable<SalesModel>> GetAllAsync()
+        public async Task<IEnumerable<OwningsModel>> GetAllAsync()
         {
             return await dbSet.ToListAsync();
         }
 
-        public async Task<SalesModel> GetByIdAsync(int id)
+        public async Task<OwningsModel> GetByIdAsync(int id)
         {
-            return await dbSet.FirstOrDefaultAsync(s => s.Id == id);
+            return await dbSet.FirstOrDefaultAsync(ow => ow.IdOwnings == id);
         }
 
-        public async Task InsertAsync(SalesModel entity)
+        public async Task InsertAsync(OwningsModel entity)
         {
            await dbSet.AddAsync(entity);
             await context.SaveChangesAsync();
         }
 
-        public void RemoveAsync(SalesModel entity)
+
+        public async Task UpdateAsync(OwningsModel entity)
+        {
+            var existing = await dbSet.FindAsync(entity.IdOwnings);
+            if(existing != null)
+            {
+                context.Entry(existing).CurrentValues.SetValues(entity);
+                await context.SaveChangesAsync();
+            }
+        }
+
+      public async  Task RemoveAsync(OwningsModel entity)
         {
             dbSet.Remove(entity);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
-
-        public void Update(SalesModel entity)
-        {
-            throw new NotImplementedException();
-        }
-
-       
     }
 }

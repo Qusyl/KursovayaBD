@@ -15,9 +15,11 @@ namespace KursovayaBD.Application.Data
 
         public DbSet<OwnerModel> Owners { get; set; }
 
+        public DbSet<OwningsModel> Ownings { get; set; }
+
         public DbSet<ShopModel> Shops { get; set; }
 
-        public DbSet<OwningsModel> Ownings { get; set; }
+     
 
         public DbSet<ProductAuditModel> ProductAudit { get; set; }
 
@@ -32,12 +34,12 @@ namespace KursovayaBD.Application.Data
         public int? CheckTotalProductInStock(int shopId)
         {
             
-            throw new NotSupportedException("lingq вызов");
+            throw new NotSupportedException("linq вызов");
         }
 
         public string AddWarehouseIfStockAccessible(int id, int shop, int product, string productName, int inStock)
         {
-            throw new NotSupportedException("lingq вызов");
+            throw new NotSupportedException("linq вызов");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,7 +50,7 @@ namespace KursovayaBD.Application.Data
                 .HasIndex(e => e.Id)
                 .IsUnique()
                 .HasDatabaseName("owner_pkey");
-            modelBuilder.Entity<OwningsModel>()
+            modelBuilder.Entity<SalesModel>()
                 .HasIndex(e => e.Id).IsUnique()
                 .HasDatabaseName("ownings_pkey");
             modelBuilder.Entity<ProductModel>()

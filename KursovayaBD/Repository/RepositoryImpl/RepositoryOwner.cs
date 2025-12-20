@@ -11,7 +11,13 @@ namespace KursovayaBD.Repository.RepositoryImpl
     {
         private readonly AppDbContext context;
 
-        private readonly DbSet<OwnerModel> dbSet;   
+        private readonly DbSet<OwnerModel> dbSet;  
+        
+        public RepositoryOwner(AppDbContext Context)
+        {
+            context = Context;
+            dbSet = context.Set<OwnerModel>();
+        }
         public async Task<IEnumerable<OwnerModel>> FindAsync(Expression<Func<OwnerModel, bool>> predicate)
         {
            return await dbSet.Where(predicate).ToListAsync();
@@ -33,16 +39,25 @@ namespace KursovayaBD.Repository.RepositoryImpl
            await context.SaveChangesAsync();
         }
 
-        public void RemoveAsync(OwnerModel entity)
+        public async Task RemoveAsync(OwnerModel entity)
         {
             dbSet.Remove(entity);
-            context.SaveChangesAsync();
+           await context.SaveChangesAsync();
         }
 
-        public void Update(OwnerModel entity)
+        
+
+        public async Task UpdateAsync(OwnerModel entity)
         {
-            dbSet.Update(entity);
-            context.SaveChanges();
+            var existing = await dbSet.FindAsync(entity.Id);
+            if (existing != null) { 
+                context.Entry(existing).CurrentValues.SetValues(entity);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                Console.WriteLine("ERROR : сущность пустая!");
+            }
         }
     }
 }

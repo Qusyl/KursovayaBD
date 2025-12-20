@@ -9,26 +9,21 @@ namespace KursovayaBD.Models
         [Key]
         [Required]
         [Column("id")]
-        public int Id { get; set; }
+        public int IdOwnings { get; set; }
 
         [Required]
         [Column("shop")]
+       
 
         public int Shop { get; set; }
 
         [Required]
         [Column("owner")]
+        
         public int Owner { get; set; }
 
         [Column("holding")]
         public decimal Holding { get; set; } = decimal.Zero;
-
-        [ForeignKey("fk_owner")]
-        public OwnerModel OwnerFK { get; set; } = null!;
-
-        [ForeignKey("fk_shop")]
-
-        public ShopModel ShopFK { get; set; } = null!;  
 
     }
 }

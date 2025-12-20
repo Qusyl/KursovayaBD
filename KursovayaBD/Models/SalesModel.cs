@@ -13,14 +13,20 @@ namespace KursovayaBD.Models
 
         [Required]
         [Column("product")]
+      
         public int Product { get; set; }
 
         [Required]
         [Column("shop")]
+
         public int Shop { get; set; }
 
         [Column("profit")]
         public decimal Profit {  get; set; } = decimal.Zero;
+
+
+    
+
 
 
     }

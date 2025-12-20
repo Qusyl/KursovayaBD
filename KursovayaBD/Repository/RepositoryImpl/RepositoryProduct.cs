@@ -10,6 +10,12 @@ namespace KursovayaBD.Repository.RepositoryImpl
     {
         private readonly AppDbContext context;
         private readonly DbSet<ProductModel> dbSet;
+
+        public RepositoryProduct(AppDbContext Context)
+        {
+            context = Context;
+            dbSet = context.Set<ProductModel>();    
+        }
         public async Task<IEnumerable<ProductModel>> FindAsync(Expression<Func<ProductModel, bool>> predicate)
         {
             return await dbSet.Where(predicate).ToListAsync();
@@ -31,16 +37,22 @@ namespace KursovayaBD.Repository.RepositoryImpl
             await context.SaveChangesAsync();
         }
 
-        public void RemoveAsync(ProductModel entity)
+       
+
+        public async Task UpdateAsync(ProductModel entity)
         {
-            dbSet.Remove(entity);
-            context.SaveChanges();
+            var existing =  await dbSet.FindAsync(entity.Id);
+            if (existing != null)
+            {
+                context.Entry(existing).CurrentValues.SetValues(entity);
+                await context.SaveChangesAsync();
+            }
         }
 
-        public void Update(ProductModel entity)
+      public async Task RemoveAsync(ProductModel entity)
         {
-            dbSet.Update(entity);
-            context.SaveChanges();
+            dbSet.Remove(entity);
+            await context.SaveChangesAsync();
         }
     }
 }

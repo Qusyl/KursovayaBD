@@ -10,6 +10,12 @@ namespace KursovayaBD.Repository.RepositoryImpl
     {
         private readonly AppDbContext context;
         private readonly DbSet<ShopModel> dbSet;
+
+        public RepositoryShop(AppDbContext context)
+        {
+            this.context = context;
+            dbSet = context.Set<ShopModel>();
+        }
         public async Task<IEnumerable<ShopModel>> FindAsync(Expression<Func<ShopModel, bool>> predicate)
         {
             return await dbSet.Where(predicate).ToListAsync();
@@ -31,17 +37,20 @@ namespace KursovayaBD.Repository.RepositoryImpl
             await context.SaveChangesAsync();
         }
 
-        public void RemoveAsync(ShopModel entity)
+        public async Task RemoveAsync(ShopModel entity)
         {
             dbSet.Remove(entity);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-        public void Update(ShopModel entity)
+        public async Task UpdateAsync(ShopModel entity)
         {
-           dbSet.Update (entity);
-
-            context.SaveChanges ();
+            var existing =await dbSet.FindAsync(entity.Id);
+            if (existing != null)
+            {
+                context.Entry(existing).CurrentValues.SetValues(entity);
+                await context.SaveChangesAsync();
+            }
         }
     }
 
