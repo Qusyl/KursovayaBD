@@ -1,12 +1,9 @@
-﻿
-const API_URL = 'https://localhost:7071/api/Ownings';
-
+﻿const API_URL = 'https://localhost:7071/api/Ownings';
 
 document.addEventListener('DOMContentLoaded', function () {
     loadOwnings();
     setupEventListeners();
 });
-
 
 async function loadOwnings() {
     const table = document.getElementById('owningsTable');
@@ -69,7 +66,6 @@ function renderOwnings(ownings) {
     });
 }
 
-
 async function searchOwnings() {
     const holdingInput = document.getElementById('searchHolding');
     const holding = holdingInput.value;
@@ -120,12 +116,16 @@ function openModal(owningId = null) {
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('owningsForm');
 
+  
+    form.reset();
+
     if (owningId) {
         title.textContent = 'Редактировать владение';
         loadOwningForEdit(owningId);
     } else {
         title.textContent = 'Добавить владение';
-        form.reset();
+        
+        document.getElementById('holding').value = 0.5;
         document.getElementById('owningsId').value = '';
     }
 
@@ -143,10 +143,11 @@ async function loadOwningForEdit(id) {
 
         const owning = await response.json();
 
+        
         document.getElementById('owningsId').value = owning.idOwnings;
         document.getElementById('shop').value = owning.shop || '';
         document.getElementById('owner').value = owning.owner || '';
-        document.getElementById('holding').value = owning.holding || 0;
+        document.getElementById('holding').value = owning.holding || 0.5;
 
     } catch (error) {
         showError('Не удалось загрузить владение: ' + error.message);
@@ -157,31 +158,47 @@ async function loadOwningForEdit(id) {
 async function saveOwnings(event) {
     event.preventDefault();
 
-    const owningId = document.getElementById('owningsId').value;
-    const owning = {
-        idOwnings: owningId ? parseInt(owningId) : 0,
-        shop: parseInt(document.getElementById('shop').value),
-        owner: parseInt(document.getElementById('owner').value),
-        holding: parseFloat(document.getElementById('holding').value)
-    };
+    const owningIdInput = document.getElementById('owningsId').value;
 
 
-    if (owning.shop < 1 || owning.owner < 1) {
-        showError('ID магазина и владельца должны быть положительными числами');
+    if (!owningIdInput || parseInt(owningIdInput) <= 0) {
+        showError('Введите корректный ID владения (должен быть больше 0)');
         return;
     }
 
-    if (owning.holding < 0 || owning.holding > 1) {
+    const owningId = parseInt(owningIdInput);
+
+    const shopId = document.getElementById('shop').value;
+    const ownerId = document.getElementById('owner').value;
+    const holding = document.getElementById('holding').value;
+
+   
+    if (!shopId || parseInt(shopId) < 1) {
+        showError('Введите корректный ID магазина');
+        return;
+    }
+
+    if (!ownerId || parseInt(ownerId) < 1) {
+        showError('Введите корректный ID владельца');
+        return;
+    }
+
+    if (!holding || parseFloat(holding) < 0 || parseFloat(holding) > 1) {
         showError('Доля владения должна быть в диапазоне от 0 до 1');
         return;
     }
 
-    const method = owningId ? 'PUT' : 'POST';
-    const url = owningId ? `${API_URL}/${owningId}` : API_URL;
+    const owning = {
+        idOwnings: owningId,
+        shop: parseInt(shopId),
+        owner: parseInt(ownerId),
+        holding: parseFloat(holding)
+    };
 
     try {
-        const response = await fetch(url, {
-            method: method,
+       
+        let response = await fetch(`${API_URL}/${owningId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -189,16 +206,36 @@ async function saveOwnings(event) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Ошибка ${response.status}`);
+        
+            if (response.status === 404) {
+                response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(owning)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Ошибка ${response.status}`);
+                }
+
+                showSuccess('Владение добавлено');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || `Ошибка ${response.status}`);
+            }
+        } else {
+            showSuccess('Владение обновлено');
         }
 
         closeModal();
-        loadOwnings();
-        showSuccess(owningId ? 'Владение обновлено' : 'Владение добавлено');
+        await loadOwnings();
 
     } catch (error) {
         showError('Ошибка сохранения: ' + error.message);
+        console.error('Save error:', error);
     }
 }
 
@@ -227,7 +264,6 @@ function editOwning(id) {
 }
 
 function formatHolding(holding) {
-
     return `${(holding * 100).toFixed(1)}%`;
 }
 
@@ -239,31 +275,46 @@ function showError(message) {
     alert('✗ ' + message);
 }
 
-
 function setupEventListeners() {
 
+    document.getElementById('searchHolding').addEventListener('input', searchOwnings);
+
+
+    document.querySelector('.btn-clear-search').addEventListener('click', clearSearch);
+
+   
+    document.querySelector('.btn-add').addEventListener('click', () => openModal());
+
+  
     document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this) {
+        if (e.target === this || e.target.classList.contains('close')) {
             closeModal();
         }
     });
 
    
+    document.getElementById('owningsForm').addEventListener('submit', saveOwnings);
+
+ 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeModal();
         }
     });
 
-
+    
     document.getElementById('holding').addEventListener('input', function (e) {
         let value = parseFloat(this.value);
         if (value < 0) this.value = 0;
         if (value > 1) this.value = 1;
+        if (isNaN(value)) this.value = 0;
     });
 
+  
     document.getElementById('searchHolding').addEventListener('input', function (e) {
         let value = parseFloat(this.value);
         if (value < 0) this.value = 0;
+        if (value > 1) this.value = 1;
+        if (isNaN(value)) this.value = '';
     });
 }

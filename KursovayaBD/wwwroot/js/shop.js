@@ -129,12 +129,16 @@ function openModal(shopId = null) {
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('shopForm');
 
+    form.reset();
+
     if (shopId) {
         title.textContent = 'Редактировать магазин';
         loadShopForEdit(shopId);
     } else {
         title.textContent = 'Добавить магазин';
-        form.reset();
+        
+        document.getElementById('fund').value = 0;
+      
         document.getElementById('shopId').value = '';
     }
 
@@ -153,6 +157,7 @@ async function loadShopForEdit(id) {
 
         const shop = await response.json();
 
+      
         document.getElementById('shopId').value = shop.id;
         document.getElementById('shopName').value = shop.shopName || '';
         document.getElementById('shopType').value = shop.shopType || '';
@@ -169,16 +174,25 @@ async function loadShopForEdit(id) {
 async function saveShop(event) {
     event.preventDefault();
 
-    const shopId = document.getElementById('shopId').value;
+    const shopIdInput = document.getElementById('shopId').value;
+
+  
+    if (!shopIdInput || parseInt(shopIdInput) <= 0) {
+        showError('Введите корректный ID магазина (должен быть больше 0)');
+        return;
+    }
+
+    const shopId = parseInt(shopIdInput);
+
     const shop = {
-        id: shopId ? parseInt(shopId) : 0,
+        id: shopId,
         shopName: document.getElementById('shopName').value.trim(),
         shopType: document.getElementById('shopType').value,
         geoposition: document.getElementById('geoposition').value.trim(),
         fund: parseFloat(document.getElementById('fund').value)
     };
 
-    // Валидация
+ 
     if (!shop.shopName) {
         showError('Название магазина обязательно');
         return;
@@ -194,17 +208,17 @@ async function saveShop(event) {
         return;
     }
 
-    if (shop.fund < 0) {
-        showError('Фонд не может быть отрицательным');
+    if (shop.fund < 0 || isNaN(shop.fund)) {
+        showError('Фонд должен быть положительным числом');
         return;
     }
 
-    const method = shopId ? 'PUT' : 'POST';
-    const url = shopId ? `${API_URL}/${shopId}` : API_URL;
+ 
 
     try {
-        const response = await fetch(url, {
-            method: method,
+      
+        let response = await fetch(`${API_URL}/${shopId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -212,16 +226,36 @@ async function saveShop(event) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Ошибка ${response.status}`);
+    
+            if (response.status === 404) {
+                response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(shop)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Ошибка ${response.status}`);
+                }
+
+                showSuccess('Магазин добавлен');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || `Ошибка ${response.status}`);
+            }
+        } else {
+            showSuccess('Магазин обновлен');
         }
 
         closeModal();
-        loadShops();
-        showSuccess(shopId ? 'Магазин обновлен' : 'Магазин добавлен');
+        await loadShops();
 
     } catch (error) {
         showError('Ошибка сохранения: ' + error.message);
+        console.error('Save error:', error);
     }
 }
 
@@ -271,11 +305,23 @@ function showError(message) {
 
 function setupEventListeners() {
    
+    document.getElementById('searchShop').addEventListener('input', searchShops);
+
+
+    document.querySelector('.btn-clear-search').addEventListener('click', clearSearch);
+
+  
+    document.querySelector('.btn-add').addEventListener('click', () => openModal());
+
+   
     document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this) {
+        if (e.target === this || e.target.classList.contains('btn-close')) {
             closeModal();
         }
     });
+
+  
+    document.getElementById('shopForm').addEventListener('submit', saveShop);
 
    
     document.addEventListener('keydown', function (e) {

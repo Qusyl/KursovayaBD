@@ -1,12 +1,9 @@
-﻿
-const API_URL = 'https://localhost:7071/api/Product'; 
+﻿const API_URL = 'https://localhost:7071/api/Product';
 
-// Основные функции
 document.addEventListener('DOMContentLoaded', function () {
     loadProducts();
     setupEventListeners();
 });
-
 
 async function loadProducts() {
     const table = document.getElementById('productsTable');
@@ -14,8 +11,8 @@ async function loadProducts() {
     const empty = document.getElementById('empty');
 
     try {
-        loading.style.display = 'block';
-        table.innerHTML = '';
+        if (loading) loading.style.display = 'block';
+        if (table) table.innerHTML = '';
 
         const response = await fetch(API_URL);
 
@@ -26,24 +23,27 @@ async function loadProducts() {
         const products = await response.json();
 
         if (products.length === 0) {
-            empty.style.display = 'block';
-            table.style.display = 'none';
+            if (empty) empty.style.display = 'block';
+            if (table) table.style.display = 'none';
         } else {
-            empty.style.display = 'none';
-            table.style.display = '';
-            renderProducts(products);
+            if (empty) empty.style.display = 'none';
+            if (table) {
+                table.style.display = '';
+                renderProducts(products);
+            }
         }
 
     } catch (error) {
         showError('Не удалось загрузить товары: ' + error.message);
     } finally {
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
     }
 }
 
-
 function renderProducts(products) {
     const table = document.getElementById('productsTable');
+    if (!table) return;
+
     table.innerHTML = '';
 
     products.forEach(product => {
@@ -71,13 +71,19 @@ function renderProducts(products) {
     });
 }
 
-
 async function searchProducts() {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
+    const searchInput = document.getElementById('search');
+    if (!searchInput) return;
+
+    const searchTerm = searchInput.value.toLowerCase();
     const table = document.getElementById('productsTable');
 
     try {
         const response = await fetch(API_URL);
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки данных');
+        }
+
         const products = await response.json();
 
         if (searchTerm) {
@@ -87,36 +93,60 @@ async function searchProducts() {
                 product.category?.toLowerCase().includes(searchTerm))
             );
             renderProducts(filtered);
+
+            const empty = document.getElementById('empty');
+            if (empty) {
+                empty.style.display = filtered.length === 0 ? 'block' : 'none';
+            }
+            if (table) {
+                table.style.display = filtered.length === 0 ? 'none' : '';
+            }
         } else {
             renderProducts(products);
+            const empty = document.getElementById('empty');
+            if (empty) empty.style.display = 'none';
+            if (table) table.style.display = '';
         }
     } catch (error) {
         showError('Ошибка поиска: ' + error.message);
     }
 }
 
-
 function openModal(productId = null) {
     const modal = document.getElementById('modal');
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('productForm');
 
+    if (!modal || !form) {
+        console.error('Модальное окно или форма не найдены');
+        showError('Модальное окно не найдено');
+        return;
+    }
+
+   
+    form.reset();
+
     if (productId) {
-        title.textContent = 'Редактировать товар';
+        if (title) title.textContent = 'Редактировать товар';
         loadProductForEdit(productId);
     } else {
-        title.textContent = 'Добавить товар';
-        form.reset();
-        document.getElementById('productId').value = '';
+        if (title) title.textContent = 'Добавить товар';
+        
+        const productIdInput = document.getElementById('productIdInput');
+        if (productIdInput) productIdInput.value = '';
     }
 
     modal.style.display = 'block';
+    console.log('Modal opened'); 
 }
 
 function closeModal() {
-    document.getElementById('modal').style.display = 'none';
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('Modal closed'); 
+    }
 }
-
 
 async function loadProductForEdit(id) {
     try {
@@ -125,11 +155,17 @@ async function loadProductForEdit(id) {
 
         const product = await response.json();
 
-        document.getElementById('productId').value = product.id;
-        document.getElementById('productName').value = product.productName || '';
-        document.getElementById('productPrice').value = product.productPrice || 0;
-        document.getElementById('producer').value = product.producer || '';
-        document.getElementById('category').value = product.category || '';
+        const productIdInput = document.getElementById('productIdInput');
+        const productNameInput = document.getElementById('productName');
+        const productPriceInput = document.getElementById('productPrice');
+        const producerInput = document.getElementById('producer');
+        const categoryInput = document.getElementById('category');
+
+        if (productIdInput) productIdInput.value = product.id;
+        if (productNameInput) productNameInput.value = product.productName || '';
+        if (productPriceInput) productPriceInput.value = product.productPrice || 0;
+        if (producerInput) producerInput.value = product.producer || '';
+        if (categoryInput) categoryInput.value = product.category || '';
 
     } catch (error) {
         showError('Не удалось загрузить товар: ' + error.message);
@@ -137,36 +173,60 @@ async function loadProductForEdit(id) {
     }
 }
 
-
 async function saveProduct(event) {
     event.preventDefault();
 
-    const productId = document.getElementById('productId').value;
+    const productIdInput = document.getElementById('productIdInput');
+    const productNameInput = document.getElementById('productName');
+    const productPriceInput = document.getElementById('productPrice');
+    const producerInput = document.getElementById('producer');
+    const categoryInput = document.getElementById('category');
+
+    if (!productIdInput || !productNameInput || !productPriceInput || !producerInput || !categoryInput) {
+        showError('Не все обязательные поля найдены');
+        return;
+    }
+
+    const productIdValue = productIdInput.value;
+    if (!productIdValue || parseInt(productIdValue) <= 0) {
+        showError('Введите корректный ID товара (должен быть больше 0)');
+        return;
+    }
+
+    const productId = parseInt(productIdValue);
+
     const product = {
-        id: productId ? parseInt(productId) : 0,
-        productName: document.getElementById('productName').value,
-        productPrice: parseFloat(document.getElementById('productPrice').value),
-        producer: document.getElementById('producer').value,
-        category: document.getElementById('category').value
+        id: productId,
+        productName: productNameInput.value.trim(),
+        productPrice: parseFloat(productPriceInput.value),
+        producer: producerInput.value.trim(),
+        category: categoryInput.value.trim()
     };
 
-
-    if (!product.productName.trim()) {
+    if (!product.productName) {
         showError('Название товара обязательно');
         return;
     }
 
-    if (product.productPrice < 0) {
-        showError('Цена не может быть отрицательной');
+    if (product.productPrice < 0 || isNaN(product.productPrice)) {
+        showError('Цена должна быть положительным числом');
         return;
     }
 
-    const method = productId ? 'PUT' : 'POST';
-    const url = productId ? `${API_URL}/${productId}` : API_URL;
+    if (!product.producer) {
+        showError('Производитель обязателен');
+        return;
+    }
+
+    if (!product.category) {
+        showError('Категория обязательна');
+        return;
+    }
 
     try {
-        const response = await fetch(url, {
-            method: method,
+     
+        let response = await fetch(`${API_URL}/${productId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -174,19 +234,38 @@ async function saveProduct(event) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Ошибка ${response.status}`);
+            
+            if (response.status === 404) {
+                response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Ошибка ${response.status}`);
+                }
+
+                showSuccess('Товар добавлен');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || `Ошибка ${response.status}`);
+            }
+        } else {
+            showSuccess('Товар обновлен');
         }
 
         closeModal();
-        loadProducts();
-        showSuccess(productId ? 'Товар обновлен' : 'Товар добавлен');
+        await loadProducts();
 
     } catch (error) {
         showError('Ошибка сохранения: ' + error.message);
+        console.error('Save error:', error);
     }
 }
-
 
 async function deleteProduct(id) {
     if (!confirm('Удалить этот товар?')) return;
@@ -200,7 +279,7 @@ async function deleteProduct(id) {
             throw new Error(`Ошибка ${response.status}`);
         }
 
-        loadProducts();
+        await loadProducts();
         showSuccess('Товар удален');
 
     } catch (error) {
@@ -208,12 +287,12 @@ async function deleteProduct(id) {
     }
 }
 
-
 function editProduct(id) {
     openModal(id);
 }
 
 function formatCurrency(amount) {
+    if (amount === null || amount === undefined) return '-';
     return new Intl.NumberFormat('ru-RU', {
         style: 'currency',
         currency: 'RUB',
@@ -229,19 +308,24 @@ function showError(message) {
     alert('✗ ' + message);
 }
 
-
 function setupEventListeners() {
-   
-    document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    }
 
-   
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeModal();
         }
     });
+
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.addEventListener('input', searchProducts);
+    }
 }

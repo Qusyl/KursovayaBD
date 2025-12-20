@@ -1,6 +1,4 @@
-﻿
-const API_URL = 'https://localhost:7071/api/Sales';
-
+﻿const API_URL = 'https://localhost:7071/api/Sales';
 
 document.addEventListener('DOMContentLoaded', function () {
     loadSales();
@@ -8,15 +6,14 @@ document.addEventListener('DOMContentLoaded', function () {
     setupEventListeners();
 });
 
-
 async function loadSales() {
     const table = document.getElementById('salesTable');
     const loading = document.getElementById('loading');
     const empty = document.getElementById('empty');
 
     try {
-        loading.style.display = 'block';
-        table.innerHTML = '';
+        if (loading) loading.style.display = 'block';
+        if (table) table.innerHTML = '';
 
         const response = await fetch(API_URL);
 
@@ -27,23 +24,27 @@ async function loadSales() {
         const sales = await response.json();
 
         if (sales.length === 0) {
-            empty.style.display = 'block';
-            table.style.display = 'none';
+            if (empty) empty.style.display = 'block';
+            if (table) table.style.display = 'none';
         } else {
-            empty.style.display = 'none';
-            table.style.display = '';
-            renderSales(sales);
+            if (empty) empty.style.display = 'none';
+            if (table) {
+                table.style.display = '';
+                renderSales(sales);
+            }
         }
 
     } catch (error) {
         showError('Не удалось загрузить продажи: ' + error.message);
     } finally {
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
     }
 }
 
 function renderSales(sales) {
     const table = document.getElementById('salesTable');
+    if (!table) return;
+
     table.innerHTML = '';
 
     sales.forEach(sale => {
@@ -70,7 +71,6 @@ function renderSales(sales) {
     });
 }
 
-
 async function loadBestProfitCount() {
     try {
         const response = await fetch(`${API_URL}/best-profit-products-count`);
@@ -80,16 +80,20 @@ async function loadBestProfitCount() {
         }
 
         const data = await response.json();
-        document.getElementById('bestProfitCount').textContent = data.count;
+        const bestProfitCount = document.getElementById('bestProfitCount');
+        if (bestProfitCount) {
+            bestProfitCount.textContent = data.count || 0;
+        }
 
     } catch (error) {
         console.error('Ошибка загрузки статистики:', error);
     }
 }
 
-
 async function searchSales() {
     const profitInput = document.getElementById('searchProfit');
+    if (!profitInput) return;
+
     const profit = profitInput.value;
 
     if (!profit || profit === '') {
@@ -101,8 +105,8 @@ async function searchSales() {
     const loading = document.getElementById('loading');
 
     try {
-        loading.style.display = 'block';
-        table.innerHTML = '';
+        if (loading) loading.style.display = 'block';
+        if (table) table.innerHTML = '';
 
         const response = await fetch(`${API_URL}/search?profit=${profit}`);
 
@@ -111,43 +115,61 @@ async function searchSales() {
         }
 
         const sales = await response.json();
-        renderSales(sales);
+
+        if (sales.length === 0) {
+            const empty = document.getElementById('empty');
+            if (empty) empty.style.display = 'block';
+            if (table) table.style.display = 'none';
+        } else {
+            const empty = document.getElementById('empty');
+            if (empty) empty.style.display = 'none';
+            if (table) {
+                table.style.display = '';
+                renderSales(sales);
+            }
+        }
 
     } catch (error) {
         showError('Ошибка поиска: ' + error.message);
     } finally {
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
     }
 }
 
-
 function clearSearch() {
-    document.getElementById('searchProfit').value = '';
+    const searchInput = document.getElementById('searchProfit');
+    if (searchInput) searchInput.value = '';
     loadSales();
 }
-
 
 function openModal(saleId = null) {
     const modal = document.getElementById('modal');
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('saleForm');
 
+    if (!modal || !form) {
+        console.error('Модальное окно или форма не найдены');
+        return;
+    }
+
+    form.reset();
+
     if (saleId) {
-        title.textContent = 'Редактировать продажу';
+        if (title) title.textContent = 'Редактировать продажу';
         loadSaleForEdit(saleId);
     } else {
-        title.textContent = 'Добавить продажу';
-        form.reset();
-        document.getElementById('saleId').value = '';
+        if (title) title.textContent = 'Добавить продажу';
+        const saleIdInput = document.getElementById('saleIdInput');
+        if (saleIdInput) saleIdInput.value = '';
     }
 
     modal.style.display = 'block';
 }
 
 function closeModal() {
-    document.getElementById('modal').style.display = 'none';
+    const modal = document.getElementById('modal');
+    if (modal) modal.style.display = 'none';
 }
-
 
 async function loadSaleForEdit(id) {
     try {
@@ -156,10 +178,15 @@ async function loadSaleForEdit(id) {
 
         const sale = await response.json();
 
-        document.getElementById('saleId').value = sale.id;
-        document.getElementById('product').value = sale.product;
-        document.getElementById('shop').value = sale.shop;
-        document.getElementById('profit').value = sale.profit;
+        const saleIdInput = document.getElementById('saleIdInput');
+        const productInput = document.getElementById('product');
+        const shopInput = document.getElementById('shop');
+        const profitInput = document.getElementById('profit');
+
+        if (saleIdInput) saleIdInput.value = sale.id;
+        if (productInput) productInput.value = sale.product || '';
+        if (shopInput) shopInput.value = sale.shop || '';
+        if (profitInput) profitInput.value = sale.profit || 0;
 
     } catch (error) {
         showError('Не удалось загрузить продажу: ' + error.message);
@@ -167,35 +194,48 @@ async function loadSaleForEdit(id) {
     }
 }
 
-
 async function saveSale(event) {
     event.preventDefault();
 
-    const saleId = document.getElementById('saleId').value;
+    const saleIdInput = document.getElementById('saleIdInput');
+    const productInput = document.getElementById('product');
+    const shopInput = document.getElementById('shop');
+    const profitInput = document.getElementById('profit');
+
+    if (!saleIdInput || !productInput || !shopInput || !profitInput) {
+        showError('Не все обязательные поля найдены');
+        return;
+    }
+
+    const saleIdValue = saleIdInput.value;
+    if (!saleIdValue || parseInt(saleIdValue) <= 0) {
+        showError('Введите корректный ID продажи (должен быть больше 0)');
+        return;
+    }
+
+    const saleId = parseInt(saleIdValue);
+
     const sale = {
-        id: saleId ? parseInt(saleId) : 0,
-        product: parseInt(document.getElementById('product').value),
-        shop: parseInt(document.getElementById('shop').value),
-        profit: parseFloat(document.getElementById('profit').value)
+        id: saleId,
+        product: parseInt(productInput.value),
+        shop: parseInt(shopInput.value),
+        profit: parseFloat(profitInput.value)
     };
 
- 
     if (sale.product < 1 || sale.shop < 1) {
         showError('ID товара и магазина должны быть положительными числами');
         return;
     }
 
-    if (sale.profit < 0) {
-        showError('Прибыль не может быть отрицательной');
+    if (sale.profit < 0 || isNaN(sale.profit)) {
+        showError('Прибыль должна быть положительным числом');
         return;
     }
 
-    const method = saleId ? 'PUT' : 'POST';
-    const url = saleId ? `${API_URL}/${saleId}` : API_URL;
-
     try {
-        const response = await fetch(url, {
-            method: method,
+    
+        let response = await fetch(`${API_URL}/${saleId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -203,20 +243,39 @@ async function saveSale(event) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Ошибка ${response.status}`);
+           
+            if (response.status === 404) {
+                response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sale)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Ошибка ${response.status}`);
+                }
+
+                showSuccess('Продажа добавлена');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || `Ошибка ${response.status}`);
+            }
+        } else {
+            showSuccess('Продажа обновлена');
         }
 
         closeModal();
-        loadSales();
-        loadBestProfitCount();
-        showSuccess(saleId ? 'Продажа обновлена' : 'Продажа добавлена');
+        await loadSales();
+        await loadBestProfitCount();
 
     } catch (error) {
         showError('Ошибка сохранения: ' + error.message);
+        console.error('Save error:', error);
     }
 }
-
 
 async function deleteSale(id) {
     if (!confirm('Удалить эту продажу?')) return;
@@ -230,8 +289,8 @@ async function deleteSale(id) {
             throw new Error(`Ошибка ${response.status}`);
         }
 
-        loadSales();
-        loadBestProfitCount();
+        await loadSales();
+        await loadBestProfitCount();
         showSuccess('Продажа удалена');
 
     } catch (error) {
@@ -239,12 +298,12 @@ async function deleteSale(id) {
     }
 }
 
-
 function editSale(id) {
     openModal(id);
 }
 
 function formatCurrency(amount) {
+    if (amount === null || amount === undefined) return '-';
     return new Intl.NumberFormat('ru-RU', {
         style: 'currency',
         currency: 'RUB',
@@ -260,14 +319,15 @@ function showError(message) {
     alert('✗ ' + message);
 }
 
-
 function setupEventListeners() {
-    
-    document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    }
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
@@ -275,13 +335,21 @@ function setupEventListeners() {
         }
     });
 
-   
-    document.getElementById('profit').addEventListener('input', function (e) {
-        if (this.value < 0) this.value = 0;
-    });
+    const profitInput = document.getElementById('profit');
+    if (profitInput) {
+        profitInput.addEventListener('input', function (e) {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (isNaN(value)) this.value = '';
+        });
+    }
 
-    
-    document.getElementById('searchProfit').addEventListener('input', function (e) {
-        if (this.value < 0) this.value = 0;
-    });
+    const searchProfitInput = document.getElementById('searchProfit');
+    if (searchProfitInput) {
+        searchProfitInput.addEventListener('input', function (e) {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (isNaN(value)) this.value = '';
+        });
+    }
 }

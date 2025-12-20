@@ -112,8 +112,13 @@
             </div>
             <div class="modal-body">
                 <form id="shopForm" onsubmit="saveShop(event)">
-                    <input type="hidden" id="shopId">
+                  
 
+                    <div class="form-group">
+                        <label>ID магазина *</label>
+                        <input type="number" id="shopId" required min="1"
+                               placeholder="Введите уникальный ID">
+                    </div>
                     <div class="form-group">
                         <label>Название магазина</label>
                         <input type="text" id="shopName" required maxlength="50">

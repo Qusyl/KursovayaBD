@@ -62,8 +62,11 @@
                     <p>Управление работниками магазинов</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="loadWorkersWithShops()">
+                    <button class="btn btn-secondary" onclick="loadWorkersWithShops()" id="showShopsBtn">
                         <i class="fas fa-store"></i> Показать с магазинами
+                    </button>
+                    <button class="btn btn-secondary" onclick="showAllWorkers()" id="showAllBtn" style="display: none;">
+                        <i class="fas fa-list"></i> Показать всех
                     </button>
                     <button class="btn btn-primary" onclick="openModal()">
                         <i class="fas fa-plus"></i> Добавить работника
@@ -102,7 +105,7 @@
             </div>
 
             <div class="table-container">
-                <table>
+                <table id="workersTableMain">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -110,12 +113,13 @@
                             <th>Фамилия</th>
                             <th>Отчество</th>
                             <th>Телефон</th>
-                            <th>ID Магазина</th>
-                            <th>Действия</th>
+                            <th>Магазин / ID Магазина</th>
+                            <th class="xml-cell">XML (Avatar)</th>
+                            <th class="actions-column">Действия</th>
                         </tr>
                     </thead>
                     <tbody id="workersTable">
-                        <!-- Данные будут загружены через JS -->
+                      
                     </tbody>
                 </table>
             </div>
@@ -132,7 +136,24 @@
         </main>
     </div>
 
-    <!-- Модальное окно -->
+ 
+    <div id="xmlModal" class="xml-modal">
+        <div class="xml-modal-content">
+            <div class="xml-modal-header">
+                <h3>XML (Avatar)</h3>
+                <button class="close" onclick="closeXmlModal()">&times;</button>
+            </div>
+            <div class="xml-modal-body" id="xmlModalBody">
+             
+            </div>
+            <button class="copy-xml-btn" onclick="copyXmlToClipboard()">
+                <i class="fas fa-copy"></i> Копировать XML
+            </button>
+            <span class="copy-success" id="copySuccess">Скопировано!</span>
+        </div>
+    </div>
+
+
     <div id="modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -141,33 +162,37 @@
             </div>
             <div class="modal-body">
                 <form id="workerForm" onsubmit="saveWorker(event)">
-                    <input type="hidden" id="workerId">
+                    <div class="form-group">
+                        <label>ID Работника *</label>
+                        <input type="number" id="workerIdInput" required min="1"
+                               placeholder="Введите уникальный ID работника">
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Имя</label>
+                            <label>Имя *</label>
                             <input type="text" id="workerName" required maxlength="50">
                         </div>
                         <div class="form-group">
-                            <label>Фамилия</label>
+                            <label>Фамилия *</label>
                             <input type="text" id="workerSurname" required maxlength="50">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Отчество</label>
+                        <label>Отчество *</label>
                         <input type="text" id="workerLastname" required maxlength="50">
                     </div>
 
                     <div class="form-group">
-                        <label>Телефон</label>
-                        <input type="tel" id="phone" required maxlength="12"
+                        <label>Телефон *</label>
+                        <input type="tel" id="phone" required maxlength="11"
                                pattern="[0-9]{11}" placeholder="79991234567">
                         <small class="form-hint">Формат: 11 цифр (79991234567)</small>
                     </div>
 
                     <div class="form-group">
-                        <label>ID Магазина</label>
+                        <label>ID Магазина *</label>
                         <input type="number" id="shop" required min="1">
                     </div>
 
@@ -175,7 +200,7 @@
                         <label>Avatar (XML)</label>
                         <textarea id="avatar" rows="3" maxlength="500"
                                   placeholder='<avatar><color>blue</color></avatar>'></textarea>
-                        <small class="form-hint">XML данные для аватара</small>
+                        <small class="form-hint">XML данные для аватара (макс. 500 символов)</small>
                     </div>
 
                     <div class="form-actions">

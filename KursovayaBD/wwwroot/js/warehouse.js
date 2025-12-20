@@ -1,12 +1,9 @@
-﻿
-const API_URL = 'https://localhost:7071/api/Warehouse';
-
+﻿const API_URL = 'https://localhost:7071/api/Warehouse';
 
 document.addEventListener('DOMContentLoaded', function () {
     loadWarehouse();
     setupEventListeners();
 });
-
 
 async function loadWarehouse() {
     const table = document.getElementById('warehouseTable');
@@ -41,9 +38,10 @@ async function loadWarehouse() {
     }
 }
 
-
 function renderWarehouse(warehouse) {
     const table = document.getElementById('warehouseTable');
+    if (!table) return;
+
     table.innerHTML = '';
 
     warehouse.forEach(item => {
@@ -72,7 +70,6 @@ function renderWarehouse(warehouse) {
     });
 }
 
-
 function getStockStatus(quantity) {
     if (quantity === 0) return 'Нет в наличии';
     if (quantity < 10) return 'Мало';
@@ -86,7 +83,6 @@ function getStockStatusClass(quantity) {
     if (quantity < 50) return 'stock-normal';
     return 'stock-high';
 }
-
 
 async function searchWarehouse() {
     const searchTerm = document.getElementById('searchProduct').value.trim();
@@ -112,10 +108,12 @@ async function searchWarehouse() {
         const warehouse = await response.json();
 
         if (warehouse.length === 0) {
-            document.getElementById('empty').style.display = 'block';
+            const empty = document.getElementById('empty');
+            if (empty) empty.style.display = 'block';
             table.style.display = 'none';
         } else {
-            document.getElementById('empty').style.display = 'none';
+            const empty = document.getElementById('empty');
+            if (empty) empty.style.display = 'none';
             table.style.display = '';
             renderWarehouse(warehouse);
         }
@@ -123,27 +121,31 @@ async function searchWarehouse() {
     } catch (error) {
         showError('Ошибка поиска: ' + error.message);
     } finally {
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
     }
 }
 
-
 function clearSearch() {
-    document.getElementById('searchProduct').value = '';
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) searchInput.value = '';
     loadWarehouse();
 }
 
-
 function checkStockLimit() {
-    document.getElementById('limitModal').style.display = 'block';
+    const limitModal = document.getElementById('limitModal');
+    if (limitModal) limitModal.style.display = 'block';
 }
 
 function closeLimitModal() {
-    document.getElementById('limitModal').style.display = 'none';
+    const limitModal = document.getElementById('limitModal');
+    if (limitModal) limitModal.style.display = 'none';
 }
 
 async function getTotalStock() {
-    const shopId = document.getElementById('shopIdCheck').value;
+    const shopIdCheck = document.getElementById('shopIdCheck');
+    if (!shopIdCheck) return;
+
+    const shopId = shopIdCheck.value;
 
     if (!shopId || shopId < 1) {
         showError('Введите корректный ID магазина');
@@ -159,10 +161,13 @@ async function getTotalStock() {
 
         const data = await response.json();
 
-        
-        document.getElementById('stockStats').style.display = 'block';
-        document.getElementById('totalStock').textContent = data.totalProductsInStock;
-        document.getElementById('stockMessage').textContent = data.message;
+        const stockStats = document.getElementById('stockStats');
+        const totalStock = document.getElementById('totalStock');
+        const stockMessage = document.getElementById('stockMessage');
+
+        if (stockStats) stockStats.style.display = 'block';
+        if (totalStock) totalStock.textContent = data.totalProductsInStock || 0;
+        if (stockMessage) stockMessage.textContent = data.message || 'Данные не получены';
 
         closeLimitModal();
 
@@ -171,26 +176,33 @@ async function getTotalStock() {
     }
 }
 
-
 function openModal(warehouseId = null) {
     const modal = document.getElementById('modal');
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('warehouseForm');
 
+    if (!modal || !form) {
+        console.error('Модальное окно или форма не найдены');
+        return;
+    }
+
+    form.reset();
+
     if (warehouseId) {
-        title.textContent = 'Редактировать товар на складе';
+        if (title) title.textContent = 'Редактировать товар на складе';
         loadWarehouseForEdit(warehouseId);
     } else {
-        title.textContent = 'Добавить товар на склад';
-        form.reset();
-        document.getElementById('warehouseId').value = '';
+        if (title) title.textContent = 'Добавить товар на склад';
+        const warehouseIdInput = document.getElementById('warehouseIdInput');
+        if (warehouseIdInput) warehouseIdInput.value = '';
     }
 
     modal.style.display = 'block';
 }
 
 function closeModal() {
-    document.getElementById('modal').style.display = 'none';
+    const modal = document.getElementById('modal');
+    if (modal) modal.style.display = 'none';
 }
 
 async function loadWarehouseForEdit(id) {
@@ -200,11 +212,17 @@ async function loadWarehouseForEdit(id) {
 
         const item = await response.json();
 
-        document.getElementById('warehouseId').value = item.id;
-        document.getElementById('shop').value = item.shop || '';
-        document.getElementById('product').value = item.product || '';
-        document.getElementById('productName').value = item.productName || '';
-        document.getElementById('inStock').value = item.inStock || 0;
+        const warehouseIdInput = document.getElementById('warehouseIdInput');
+        const shopInput = document.getElementById('shop');
+        const productInput = document.getElementById('product');
+        const productNameInput = document.getElementById('productName');
+        const inStockInput = document.getElementById('inStock');
+
+        if (warehouseIdInput) warehouseIdInput.value = item.id;
+        if (shopInput) shopInput.value = item.shop || '';
+        if (productInput) productInput.value = item.product || '';
+        if (productNameInput) productNameInput.value = item.productName || '';
+        if (inStockInput) inStockInput.value = item.inStock || 0;
 
     } catch (error) {
         showError('Не удалось загрузить товар: ' + error.message);
@@ -212,20 +230,36 @@ async function loadWarehouseForEdit(id) {
     }
 }
 
-
 async function saveWarehouse(event) {
     event.preventDefault();
 
-    const warehouseId = document.getElementById('warehouseId').value;
+    const warehouseIdInput = document.getElementById('warehouseIdInput');
+    const shopInput = document.getElementById('shop');
+    const productInput = document.getElementById('product');
+    const productNameInput = document.getElementById('productName');
+    const inStockInput = document.getElementById('inStock');
+
+    if (!warehouseIdInput || !shopInput || !productInput || !productNameInput || !inStockInput) {
+        showError('Не все обязательные поля найдены');
+        return;
+    }
+
+    const warehouseIdValue = warehouseIdInput.value;
+    if (!warehouseIdValue || parseInt(warehouseIdValue) <= 0) {
+        showError('Введите корректный ID складской записи (должен быть больше 0)');
+        return;
+    }
+
+    const warehouseId = parseInt(warehouseIdValue);
+
     const item = {
-        id: warehouseId ? parseInt(warehouseId) : 0,
-        shop: parseInt(document.getElementById('shop').value),
-        product: parseInt(document.getElementById('product').value),
-        productName: document.getElementById('productName').value.trim(),
-        inStock: parseInt(document.getElementById('inStock').value)
+        id: warehouseId,
+        shop: parseInt(shopInput.value),
+        product: parseInt(productInput.value),
+        productName: productNameInput.value.trim(),
+        inStock: parseInt(inStockInput.value)
     };
 
-    
     if (item.shop < 1 || item.product < 1) {
         showError('ID магазина и товара должны быть положительными числами');
         return;
@@ -236,17 +270,15 @@ async function saveWarehouse(event) {
         return;
     }
 
-    if (item.inStock < 0) {
-        showError('Количество не может быть отрицательным');
+    if (item.inStock < 0 || isNaN(item.inStock)) {
+        showError('Количество должно быть положительным числом');
         return;
     }
 
-    const method = warehouseId ? 'PUT' : 'POST';
-    const url = warehouseId ? `${API_URL}/${warehouseId}` : API_URL;
-
     try {
-        const response = await fetch(url, {
-            method: method,
+      
+        let response = await fetch(`${API_URL}/${warehouseId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -254,19 +286,38 @@ async function saveWarehouse(event) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Ошибка ${response.status}`);
+           
+            if (response.status === 404) {
+                response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(item)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Ошибка ${response.status}`);
+                }
+
+                showSuccess('Товар добавлен на склад');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || `Ошибка ${response.status}`);
+            }
+        } else {
+            showSuccess('Товар обновлен');
         }
 
         closeModal();
-        loadWarehouse();
-        showSuccess(warehouseId ? 'Товар обновлен' : 'Товар добавлен на склад');
+        await loadWarehouse();
 
     } catch (error) {
         showError('Ошибка сохранения: ' + error.message);
+        console.error('Save error:', error);
     }
 }
-
 
 async function deleteWarehouse(id) {
     if (!confirm('Удалить этот товар со склада?')) return;
@@ -300,9 +351,7 @@ function showError(message) {
     alert('✗ ' + message);
 }
 
-
 function setupEventListeners() {
-
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         modal.addEventListener('click', function (e) {

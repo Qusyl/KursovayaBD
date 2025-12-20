@@ -85,7 +85,7 @@
                         </tr>
                     </thead>
                     <tbody id="owningsTable">
-                        <!-- Данные будут загружены через JS -->
+                    
                     </tbody>
                 </table>
             </div>
@@ -102,7 +102,7 @@
         </main>
     </div>
 
-    <!-- Модальное окно -->
+ 
     <div id="modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -111,20 +111,25 @@
             </div>
             <div class="modal-body">
                 <form id="owningsForm" onsubmit="saveOwnings(event)">
-                    <input type="hidden" id="owningsId">
+                   
+                    <div class="form-group">
+                        <label>ID Владения *</label>
+                        <input type="number" id="owningsId" required min="1"
+                               placeholder="Введите уникальный ID">
+                    </div>
 
                     <div class="form-group">
-                        <label>ID Магазина</label>
+                        <label>ID Магазина *</label>
                         <input type="number" id="shop" required min="1">
                     </div>
 
                     <div class="form-group">
-                        <label>ID Владельца</label>
+                        <label>ID Владельца *</label>
                         <input type="number" id="owner" required min="1">
                     </div>
 
                     <div class="form-group">
-                        <label>Доля владения (0-1)</label>
+                        <label>Доля владения (0-1) *</label>
                         <input type="number" id="holding" required step="0.01" min="0" max="1">
                         <small class="form-hint">Например: 0.5 = 50%, 1 = 100%</small>
                     </div>
