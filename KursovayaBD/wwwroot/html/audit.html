@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аудит - История изменений</title>
+    <link rel="stylesheet" href="../css/audit.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-clipboard-list"></i>
+                <h1>Аудит</h1>
+            </div>
+
+            <nav class="nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="shop.html" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Магазины</span>
+                </a>
+                <a href="product.html" class="nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>Товары</span>
+                </a>
+                <a href="sales.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Продажи</span>
+                </a>
+                <a href="warehouse.html" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Склад</span>
+                </a>
+                <a href="ownings.html" class="nav-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Владения</span>
+                </a>
+                <a href="owner.html" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Владельцы</span>
+                </a>
+                <a href="audit.html" class="nav-item active">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Аудит</span>
+                </a>
+                <a href="worker.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Работники</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h2>Аудит товаров</h2>
+                    <p>История изменений товаров</p>
+                </div>
+                <button class="btn btn-primary" onclick="loadAudit()">
+                    <i class="fas fa-sync"></i> Обновить
+                </button>
+            </div>
+
+            <div class="search-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('new')">
+                        <i class="fas fa-tag"></i> По новому имени
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('old')">
+                        <i class="fas fa-history"></i> По старому имени
+                    </button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Введите имя для поиска..."
+                           oninput="searchAudit()">
+                    <button class="btn" onclick="clearSearch()">Сбросить</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Аудита</th>
+                            <th>ID Товара</th>
+                            <th>Дата изменения</th>
+                            <th>Действие</th>
+                            <th>Старое значение</th>
+                            <th>Новое значение</th>
+                            <th>Поле</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTable">
+                        <!-- Данные будут загружены через JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Загрузка...
+            </div>
+
+            <div id="empty" class="empty" style="display: none;">
+                <i class="fas fa-file-alt"></i>
+                <p>Записи аудита не найдены</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно деталей -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="modalTitle">Детали изменения</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="audit-details">
+                    <div class="detail-row">
+                        <div class="detail-label">ID Аудита:</div>
+                        <div class="detail-value" id="detailAuditId"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">ID Товара:</div>
+                        <div class="detail-value" id="detailProductId"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Дата изменения:</div>
+                        <div class="detail-value" id="detailChangedAt"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Действие:</div>
+                        <div class="detail-value"><span class="action-badge" id="detailAction"></span></div>
+                    </div>
+
+                    <div class="changes-section">
+                        <h4>Изменения:</h4>
+                        <div class="changes-grid" id="changesGrid">
+                          
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/audit.js"></script>
+</body>
+</html>

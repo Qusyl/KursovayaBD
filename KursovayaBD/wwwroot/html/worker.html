@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Работники - Управление</title>
+    <link rel="stylesheet" href="../css/worker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-users"></i>
+                <h1>Работники</h1>
+            </div>
+
+            <nav class="nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="shop.html" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Магазины</span>
+                </a>
+                <a href="product.html" class="nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>Товары</span>
+                </a>
+                <a href="sales.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Продажи</span>
+                </a>
+                <a href="warehouse.html" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Склад</span>
+                </a>
+                <a href="ownings.html" class="nav-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Владения</span>
+                </a>
+                <a href="owner.html" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Владельцы</span>
+                </a>
+                <a href="audit.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Аудит</span>
+                </a>
+                <a href="worker.html" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Работники</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h2>Работники</h2>
+                    <p>Управление работниками магазинов</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadWorkersWithShops()">
+                        <i class="fas fa-store"></i> Показать с магазинами
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Добавить работника
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-card" id="shopsStats" style="display: none;">
+                <div class="stat-item">
+                    <i class="fas fa-user-tie"></i>
+                    <div>
+                        <h3 id="workersWithShopsCount">0</h3>
+                        <p>Работников с информацией о магазинах</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('name')">
+                        <i class="fas fa-user"></i> По имени
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('surname')">
+                        <i class="fas fa-id-card"></i> По фамилии
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('lastname')">
+                        <i class="fas fa-id-card-alt"></i> По отчеству
+                    </button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Введите для поиска..."
+                           oninput="searchWorkers()">
+                    <button class="btn" onclick="clearSearch()">Сбросить</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Фамилия</th>
+                            <th>Отчество</th>
+                            <th>Телефон</th>
+                            <th>ID Магазина</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workersTable">
+                        <!-- Данные будут загружены через JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Загрузка...
+            </div>
+
+            <div id="empty" class="empty" style="display: none;">
+                <i class="fas fa-user-slash"></i>
+                <p>Работники не найдены</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить работника</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="workerForm" onsubmit="saveWorker(event)">
+                    <input type="hidden" id="workerId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="workerName" required maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Фамилия</label>
+                            <input type="text" id="workerSurname" required maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Отчество</label>
+                        <input type="text" id="workerLastname" required maxlength="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="tel" id="phone" required maxlength="12"
+                               pattern="[0-9]{11}" placeholder="79991234567">
+                        <small class="form-hint">Формат: 11 цифр (79991234567)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ID Магазина</label>
+                        <input type="number" id="shop" required min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Avatar (XML)</label>
+                        <textarea id="avatar" rows="3" maxlength="500"
+                                  placeholder='<avatar><color>blue</color></avatar>'></textarea>
+                        <small class="form-hint">XML данные для аватара</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="closeModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/worker.js"></script>
+</body>
+</html>

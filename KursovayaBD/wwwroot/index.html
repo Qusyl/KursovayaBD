@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление БД - Главная</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+   
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-database"></i>
+                <h1>Управление БД</h1>
+            </div>
+
+            <nav class="nav">
+                <a href="../index.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="../html/shop.html" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Магазины</span>
+                </a>
+                <a href="../html/product.html" class="nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>Товары</span>
+                </a>
+                <a href="../html/sales.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Продажи</span>
+                </a>
+                <a href="../html/warehouse.html" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Склад</span>
+                </a>
+                <a href="../html/ownings.html" class="nav-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Владения</span>
+                </a>
+                <a href="../html/owner.html" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Владельцы</span>
+                </a>
+                <a href="../html/audit.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Аудит</span>
+                </a>
+                <a href="../html/worker.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Работники</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <strong>Администратор</strong>
+                        <small>Курсовая работа</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+      
+        <main class="content">
+            <header class="header">
+                <h2>Добро пожаловать</h2>
+                <p>Система управления базой данных для торговой сети</p>
+            </header>
+
+            <div class="dashboard">
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="shopCount">0</h3>
+                            <p>Магазинов</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="workerCount">0</h3>
+                            <p>Работников</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="productCount">0</h3>
+                            <p>Товаров</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalFund">0 ₽</h3>
+                            <p>Общий фонд</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>

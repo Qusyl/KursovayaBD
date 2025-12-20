@@ -28,8 +28,5 @@ namespace KursovayaBD.Models
 
         [Column("in_stock")]
         public int InStock { get; set; } = 0;
-
-    
-
     }
 }

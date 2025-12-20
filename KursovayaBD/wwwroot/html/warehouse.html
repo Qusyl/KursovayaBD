@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Склад - Управление</title>
+    <link rel="stylesheet" href="../css/warehouse.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-warehouse"></i>
+                <h1>Склад</h1>
+            </div>
+
+            <nav class="nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="shop.html" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Магазины</span>
+                </a>
+                <a href="product.html" class="nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>Товары</span>
+                </a>
+                <a href="sales.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Продажи</span>
+                </a>
+                <a href="warehouse.html" class="nav-item active">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Склад</span>
+                </a>
+                <a href="ownings.html" class="nav-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Владения</span>
+                </a>
+                <a href="owner.html" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Владельцы</span>
+                </a>
+                <a href="audit.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Аудит</span>
+                </a>
+                <a href="worker.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Работники</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h2>Склад</h2>
+                    <p>Управление складскими запасами</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="checkStockLimit()">
+                        <i class="fas fa-chart-bar"></i> Проверить лимит
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i> Добавить товар
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-card" id="stockStats" style="display: none;">
+                <div class="stat-item">
+                    <i class="fas fa-boxes"></i>
+                    <div>
+                        <h3 id="totalStock">0</h3>
+                        <p id="stockMessage">Доступно места: 2000</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchProduct" placeholder="Поиск по названию товара..."
+                       oninput="searchWarehouse()">
+                <button class="btn" onclick="clearSearch()">Сбросить</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ID Магазина</th>
+                            <th>ID Товара</th>
+                            <th>Название товара</th>
+                            <th>На складе</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="warehouseTable">
+                        <!-- Данные будут загружены через JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Загрузка...
+            </div>
+
+            <div id="empty" class="empty" style="display: none;">
+                <i class="fas fa-warehouse-empty"></i>
+                <p>Товары на складе не найдены</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно для лимита -->
+    <div id="limitModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Проверка лимита склада</h3>
+                <button class="close" onclick="closeLimitModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>ID Магазина для проверки</label>
+                    <input type="number" id="shopIdCheck" min="1" placeholder="Введите ID магазина">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="closeLimitModal()">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="getTotalStock()">Проверить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для товара -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить товар на склад</h3>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="warehouseForm" onsubmit="saveWarehouse(event)">
+                    <input type="hidden" id="warehouseId">
+
+                    <div class="form-group">
+                        <label>ID Магазина</label>
+                        <input type="number" id="shop" required min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>ID Товара</label>
+                        <input type="number" id="product" required min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Название товара</label>
+                        <input type="text" id="productName" required maxlength="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Количество на складе</label>
+                        <input type="number" id="inStock" required min="0">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="closeModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/warehouse.js"></script>
+</body>
+</html>
