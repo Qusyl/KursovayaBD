@@ -6,6 +6,30 @@
     <title>Склад - Управление</title>
     <link rel="stylesheet" href="../css/warehouse.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        
+        th[data-sortable] {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+            th[data-sortable]:hover {
+                background-color: #f0f0f0;
+            }
+
+        .sort-icon {
+            margin-left: 8px;
+            font-size: 12px;
+            transition: opacity 0.3s;
+        }
+
+        .sortable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
     <div class="app">
@@ -92,17 +116,42 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>ID Магазина</th>
-                            <th>ID Товара</th>
-                            <th>Название товара</th>
-                            <th>На складе</th>
+                            <th data-sortable="true" data-column="id" onclick="changeSort('id')">
+                                <div class="sortable-header">
+                                    ID
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="shop" onclick="changeSort('shop')">
+                                <div class="sortable-header">
+                                    ID Магазина
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="product" onclick="changeSort('product')">
+                                <div class="sortable-header">
+                                    ID Товара
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="productName" onclick="changeSort('productName')">
+                                <div class="sortable-header">
+                                    Название товара
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="inStock" onclick="changeSort('inStock')">
+                                <div class="sortable-header">
+                                    На складе
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
                             <th>Статус</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody id="warehouseTable">
-                        <!-- Данные будут загружены через JS -->
+                      
                     </tbody>
                 </table>
             </div>
@@ -119,7 +168,7 @@
         </main>
     </div>
 
-    <!-- Модальное окно для лимита -->
+ 
     <div id="limitModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -148,8 +197,6 @@
             </div>
             <div class="modal-body">
                 <form id="warehouseForm" onsubmit="saveWarehouse(event)">
-                   
-
                     <div class="form-group">
                         <label>ID Складской записи *</label>
                         <input type="number" id="warehouseIdInput" required min="1"

@@ -23,11 +23,11 @@ namespace KursovayaBD.Models
         public string Action { get; set; } = string.Empty;
 
         [Column("old_name")]
-        [MaxLength(10)]
+        [MaxLength(50)]
         public string? OldName { get; set; } 
 
         [Column("new_name")]
-        [MaxLength(10)]
+        [MaxLength(50)]
 
         public string? NewName { get; set; }
 
@@ -38,7 +38,7 @@ namespace KursovayaBD.Models
         public decimal? NewPrice { get; set; }
 
         [Column("old_producer")]
-        [MaxLength(50)]
+        [MaxLength(100)]
         public string? OldProducer { get; set; }
 
         [Column("new_producer")]

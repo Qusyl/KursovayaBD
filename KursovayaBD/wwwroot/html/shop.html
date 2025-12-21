@@ -77,11 +77,36 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Название</th>
-                            <th>Тип</th>
-                            <th>Местоположение</th>
-                            <th>Фонд (₽)</th>
+                            <th data-sortable="true" data-column="id" onclick="changeSort('id')">
+                                <div class="sortable-header">
+                                    ID
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="shopName" onclick="changeSort('shopName')">
+                                <div class="sortable-header">
+                                    Название
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="shopType" onclick="changeSort('shopType')">
+                                <div class="sortable-header">
+                                    Тип
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="geoposition" onclick="changeSort('geoposition')">
+                                <div class="sortable-header">
+                                    Местоположение
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
+                            <th data-sortable="true" data-column="fund" onclick="changeSort('fund')">
+                                <div class="sortable-header">
+                                    Фонд (₽)
+                                    <i class="sort-icon fas fa-sort"></i>
+                                </div>
+                            </th>
                             <th>Действия</th>
                         </tr>
                     </thead>

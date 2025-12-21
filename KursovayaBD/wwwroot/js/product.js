@@ -1,9 +1,22 @@
 ﻿const API_URL = 'https://localhost:7071/api/Product';
 
+
+let currentProducts = [];
+let sortColumn = 'id';
+let sortDirection = 'asc';
+
 document.addEventListener('DOMContentLoaded', function () {
     loadProducts();
     setupEventListeners();
 });
+
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 
 async function loadProducts() {
     const table = document.getElementById('productsTable');
@@ -14,13 +27,16 @@ async function loadProducts() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(API_URL, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const products = await response.json();
+        currentProducts = products;
 
         if (products.length === 0) {
             if (empty) empty.style.display = 'block';
@@ -29,7 +45,7 @@ async function loadProducts() {
             if (empty) empty.style.display = 'none';
             if (table) {
                 table.style.display = '';
-                renderProducts(products);
+                sortProducts(); 
             }
         }
 
@@ -39,13 +55,7 @@ async function loadProducts() {
         if (loading) loading.style.display = 'none';
     }
 }
-function getAuthHeader() {
-    const token = localStorage.getItem('token');
-    if (token) {
-        return { 'Authorization': `Bearer ${token}` };
-    }
-    return {};
-}
+
 function renderProducts(products) {
     const table = document.getElementById('productsTable');
     if (!table) return;
@@ -77,6 +87,77 @@ function renderProducts(products) {
     });
 }
 
+function sortProducts() {
+    if (!currentProducts || currentProducts.length === 0) return;
+
+    const sortedProducts = [...currentProducts].sort((a, b) => {
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        if (sortColumn === 'productPrice') {
+            aValue = a.productPrice || 0;
+            bValue = b.productPrice || 0;
+        }
+      
+        else if (sortColumn === 'productName') {
+            aValue = (a.productName || '').toLowerCase();
+            bValue = (b.productName || '').toLowerCase();
+        }
+      
+        else if (sortColumn === 'producer') {
+            aValue = (a.producer || '').toLowerCase();
+            bValue = (b.producer || '').toLowerCase();
+        }
+      
+        else if (sortColumn === 'category') {
+            aValue = (a.category || '').toLowerCase();
+            bValue = (b.category || '').toLowerCase();
+        }
+    
+        else if (sortColumn === 'id') {
+            aValue = a.id || 0;
+            bValue = b.id || 0;
+        }
+
+       
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    renderProducts(sortedProducts);
+    updateSortIndicators();
+}
+
+
+function changeSort(column) {
+    if (sortColumn === column) {
+        
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+       
+        sortColumn = column;
+        sortDirection = 'asc';
+    }
+
+    sortProducts();
+}
+
+
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th[data-sortable]');
+    headers.forEach(header => {
+        const icon = header.querySelector('.sort-icon');
+        if (header.dataset.column === sortColumn) {
+            icon.className = `sort-icon fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'}`;
+            icon.style.opacity = '1';
+        } else {
+            icon.className = 'sort-icon fas fa-sort';
+            icon.style.opacity = '0.3';
+        }
+    });
+}
+
 async function searchProducts() {
     const searchInput = document.getElementById('search');
     if (!searchInput) return;
@@ -85,12 +166,15 @@ async function searchProducts() {
     const table = document.getElementById('productsTable');
 
     try {
-        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(API_URL, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
         if (!response.ok) {
             throw new Error('Ошибка загрузки данных');
         }
 
         const products = await response.json();
+        currentProducts = products; 
 
         if (searchTerm) {
             const filtered = products.filter(product =>
@@ -98,7 +182,9 @@ async function searchProducts() {
                 product.producer?.toLowerCase().includes(searchTerm) ||
                 product.category?.toLowerCase().includes(searchTerm))
             );
-            renderProducts(filtered);
+
+            currentProducts = filtered;
+            sortProducts(); 
 
             const empty = document.getElementById('empty');
             if (empty) {
@@ -108,7 +194,7 @@ async function searchProducts() {
                 table.style.display = filtered.length === 0 ? 'none' : '';
             }
         } else {
-            renderProducts(products);
+            sortProducts();
             const empty = document.getElementById('empty');
             if (empty) empty.style.display = 'none';
             if (table) table.style.display = '';
@@ -129,7 +215,6 @@ function openModal(productId = null) {
         return;
     }
 
-   
     form.reset();
 
     if (productId) {
@@ -137,26 +222,28 @@ function openModal(productId = null) {
         loadProductForEdit(productId);
     } else {
         if (title) title.textContent = 'Добавить товар';
-        
+
         const productIdInput = document.getElementById('productIdInput');
         if (productIdInput) productIdInput.value = '';
     }
 
     modal.style.display = 'block';
-    console.log('Modal opened'); 
+    console.log('Modal opened');
 }
 
 function closeModal() {
     const modal = document.getElementById('modal');
     if (modal) {
         modal.style.display = 'none';
-        console.log('Modal closed'); 
+        console.log('Modal closed');
     }
 }
 
 async function loadProductForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/${id}`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
         if (!response.ok) throw new Error('Товар не найден');
 
         const product = await response.json();
@@ -230,7 +317,6 @@ async function saveProduct(event) {
     }
 
     try {
-     
         let response = await fetch(`${API_URL}/${productId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
@@ -238,7 +324,6 @@ async function saveProduct(event) {
         });
 
         if (!response.ok) {
-            
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',

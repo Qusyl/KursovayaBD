@@ -343,3 +343,36 @@ tbody tr:hover {
         align-items: flex-start;
     }
 }
+/* Стили для сортировки */
+th[data-sortable] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+    th[data-sortable]:hover {
+        background-color: rgba(139, 92, 246, 0.1);
+    }
+
+.sortable-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sort-icon {
+    margin-left: 8px;
+    font-size: 12px;
+    opacity: 0.3;
+    transition: opacity 0.3s, color 0.3s;
+}
+
+th[data-sortable]:hover .sort-icon {
+    opacity: 0.7;
+}
+
+.sort-icon.active {
+    opacity: 1;
+    color: var(--primary);
+}

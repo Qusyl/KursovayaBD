@@ -1,10 +1,16 @@
 ﻿const API_URL = 'https://localhost:7071/api/Sales';
 
+
+let currentSales = [];
+let sortColumn = 'id';
+let sortDirection = 'asc'; 
+
 document.addEventListener('DOMContentLoaded', function () {
     loadSales();
     loadBestProfitCount();
     setupEventListeners();
 });
+
 function getAuthHeader() {
     const token = localStorage.getItem('token');
     if (token) {
@@ -12,6 +18,7 @@ function getAuthHeader() {
     }
     return {};
 }
+
 async function loadSales() {
     const table = document.getElementById('salesTable');
     const loading = document.getElementById('loading');
@@ -21,13 +28,16 @@ async function loadSales() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(API_URL, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const sales = await response.json();
+        currentSales = sales; 
 
         if (sales.length === 0) {
             if (empty) empty.style.display = 'block';
@@ -36,7 +46,7 @@ async function loadSales() {
             if (empty) empty.style.display = 'none';
             if (table) {
                 table.style.display = '';
-                renderSales(sales);
+                sortSales(); 
             }
         }
 
@@ -77,9 +87,78 @@ function renderSales(sales) {
     });
 }
 
+
+function sortSales() {
+    if (!currentSales || currentSales.length === 0) return;
+
+    const sortedSales = [...currentSales].sort((a, b) => {
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        if (sortColumn === 'profit') {
+            aValue = a.profit || 0;
+            bValue = b.profit || 0;
+        }
+    
+        else if (sortColumn === 'product') {
+            aValue = a.product || 0;
+            bValue = b.product || 0;
+        }
+       
+        else if (sortColumn === 'shop') {
+            aValue = a.shop || 0;
+            bValue = b.shop || 0;
+        }
+        
+        else if (sortColumn === 'id') {
+            aValue = a.id || 0;
+            bValue = b.id || 0;
+        }
+
+     
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    renderSales(sortedSales);
+    updateSortIndicators();
+}
+
+
+function changeSort(column) {
+    if (sortColumn === column) {
+        
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        
+        sortColumn = column;
+        sortDirection = 'asc';
+    }
+
+    sortSales();
+}
+
+
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th[data-sortable]');
+    headers.forEach(header => {
+        const icon = header.querySelector('.sort-icon');
+        if (header.dataset.column === sortColumn) {
+            icon.className = `sort-icon fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'}`;
+            icon.style.opacity = '1';
+        } else {
+            icon.className = 'sort-icon fas fa-sort';
+            icon.style.opacity = '0.3';
+        }
+    });
+}
+
 async function loadBestProfitCount() {
     try {
-        const response = await fetch(`${API_URL}/best-profit-products-count`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/best-profit-products-count`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -114,13 +193,16 @@ async function searchSales() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/search?profit=${profit}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/search?profit=${profit}`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const sales = await response.json();
+        currentSales = sales; // Сохраняем отфильтрованные данные
 
         if (sales.length === 0) {
             const empty = document.getElementById('empty');
@@ -131,7 +213,7 @@ async function searchSales() {
             if (empty) empty.style.display = 'none';
             if (table) {
                 table.style.display = '';
-                renderSales(sales);
+                sortSales(); // Сортируем отфильтрованные данные
             }
         }
 
@@ -179,7 +261,9 @@ function closeModal() {
 
 async function loadSaleForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/${id}`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
         if (!response.ok) throw new Error('Продажа не найдена');
 
         const sale = await response.json();
@@ -239,7 +323,6 @@ async function saveSale(event) {
     }
 
     try {
-    
         let response = await fetch(`${API_URL}/${saleId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
@@ -247,7 +330,6 @@ async function saveSale(event) {
         });
 
         if (!response.ok) {
-           
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',

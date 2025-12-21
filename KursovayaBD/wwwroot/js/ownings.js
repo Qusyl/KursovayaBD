@@ -1,9 +1,15 @@
 ﻿const API_URL = 'https://localhost:7071/api/Ownings';
 
+
+let currentOwnings = [];
+let sortColumn = 'idOwnings';
+let sortDirection = 'asc'; 
+
 document.addEventListener('DOMContentLoaded', function () {
     loadOwnings();
     setupEventListeners();
 });
+
 function getAuthHeader() {
     const token = localStorage.getItem('token');
     if (token) {
@@ -11,6 +17,7 @@ function getAuthHeader() {
     }
     return {};
 }
+
 async function loadOwnings() {
     const table = document.getElementById('owningsTable');
     const loading = document.getElementById('loading');
@@ -20,13 +27,16 @@ async function loadOwnings() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(API_URL, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const ownings = await response.json();
+        currentOwnings = ownings; 
 
         if (ownings.length === 0) {
             empty.style.display = 'block';
@@ -34,7 +44,7 @@ async function loadOwnings() {
         } else {
             empty.style.display = 'none';
             table.style.display = '';
-            renderOwnings(ownings);
+            sortOwnings(); 
         }
 
     } catch (error) {
@@ -72,6 +82,74 @@ function renderOwnings(ownings) {
     });
 }
 
+
+function sortOwnings() {
+    if (!currentOwnings || currentOwnings.length === 0) return;
+
+    const sortedOwnings = [...currentOwnings].sort((a, b) => {
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+     
+        if (sortColumn === 'holding') {
+            aValue = a.holding || 0;
+            bValue = b.holding || 0;
+        }
+     
+        else if (sortColumn === 'shop') {
+            aValue = a.shop || 0;
+            bValue = b.shop || 0;
+        }
+       
+        else if (sortColumn === 'owner') {
+            aValue = a.owner || 0;
+            bValue = b.owner || 0;
+        }
+        
+        else if (sortColumn === 'idOwnings') {
+            aValue = a.idOwnings || 0;
+            bValue = b.idOwnings || 0;
+        }
+
+        
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    renderOwnings(sortedOwnings);
+    updateSortIndicators();
+}
+
+
+function changeSort(column) {
+    if (sortColumn === column) {
+        
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      
+        sortColumn = column;
+        sortDirection = 'asc';
+    }
+
+    sortOwnings();
+}
+
+
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th[data-sortable]');
+    headers.forEach(header => {
+        const icon = header.querySelector('.sort-icon');
+        if (header.dataset.column === sortColumn) {
+            icon.className = `sort-icon fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'}`;
+            icon.style.opacity = '1';
+        } else {
+            icon.className = 'sort-icon fas fa-sort';
+            icon.style.opacity = '0.3';
+        }
+    });
+}
+
 async function searchOwnings() {
     const holdingInput = document.getElementById('searchHolding');
     const holding = holdingInput.value;
@@ -88,13 +166,16 @@ async function searchOwnings() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/search?holding=${holding}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/search?holding=${holding}`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const ownings = await response.json();
+        currentOwnings = ownings; 
 
         if (ownings.length === 0) {
             document.getElementById('empty').style.display = 'block';
@@ -102,7 +183,7 @@ async function searchOwnings() {
         } else {
             document.getElementById('empty').style.display = 'none';
             table.style.display = '';
-            renderOwnings(ownings);
+            sortOwnings(); 
         }
 
     } catch (error) {
@@ -122,7 +203,6 @@ function openModal(owningId = null) {
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('owningsForm');
 
-  
     form.reset();
 
     if (owningId) {
@@ -130,7 +210,7 @@ function openModal(owningId = null) {
         loadOwningForEdit(owningId);
     } else {
         title.textContent = 'Добавить владение';
-        
+
         document.getElementById('holding').value = 0.5;
         document.getElementById('owningsId').value = '';
     }
@@ -144,12 +224,13 @@ function closeModal() {
 
 async function loadOwningForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        const response = await fetch(`${API_URL}/${id}`, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
         if (!response.ok) throw new Error('Владение не найдено');
 
         const owning = await response.json();
 
-        
         document.getElementById('owningsId').value = owning.idOwnings;
         document.getElementById('shop').value = owning.shop || '';
         document.getElementById('owner').value = owning.owner || '';
@@ -166,19 +247,16 @@ async function saveOwnings(event) {
 
     const owningIdInput = document.getElementById('owningsId').value;
 
-
     if (!owningIdInput || parseInt(owningIdInput) <= 0) {
         showError('Введите корректный ID владения (должен быть больше 0)');
         return;
     }
 
     const owningId = parseInt(owningIdInput);
-
     const shopId = document.getElementById('shop').value;
     const ownerId = document.getElementById('owner').value;
     const holding = document.getElementById('holding').value;
 
-   
     if (!shopId || parseInt(shopId) < 1) {
         showError('Введите корректный ID магазина');
         return;
@@ -202,7 +280,6 @@ async function saveOwnings(event) {
     };
 
     try {
-       
         let response = await fetch(`${API_URL}/${owningId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
@@ -210,7 +287,6 @@ async function saveOwnings(event) {
         });
 
         if (!response.ok) {
-        
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
@@ -279,45 +355,58 @@ function showError(message) {
 }
 
 function setupEventListeners() {
+    const searchHoldingInput = document.getElementById('searchHolding');
+    if (searchHoldingInput) {
+        searchHoldingInput.addEventListener('input', searchOwnings);
+    }
 
-    document.getElementById('searchHolding').addEventListener('input', searchOwnings);
+    const btnClear = document.querySelector('.btn-clear-search');
+    if (btnClear) {
+        btnClear.addEventListener('click', clearSearch);
+    }
 
+    const btnAdd = document.querySelector('.btn-add');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', () => openModal());
+    }
 
-    document.querySelector('.btn-clear-search').addEventListener('click', clearSearch);
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this || e.target.classList.contains('close')) {
+                closeModal();
+            }
+        });
+    }
 
-   
-    document.querySelector('.btn-add').addEventListener('click', () => openModal());
+    const owningsForm = document.getElementById('owningsForm');
+    if (owningsForm) {
+        owningsForm.addEventListener('submit', saveOwnings);
+    }
 
-  
-    document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this || e.target.classList.contains('close')) {
-            closeModal();
-        }
-    });
-
-   
-    document.getElementById('owningsForm').addEventListener('submit', saveOwnings);
-
- 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeModal();
         }
     });
 
-    
-    document.getElementById('holding').addEventListener('input', function (e) {
-        let value = parseFloat(this.value);
-        if (value < 0) this.value = 0;
-        if (value > 1) this.value = 1;
-        if (isNaN(value)) this.value = 0;
-    });
+    const holdingInput = document.getElementById('holding');
+    if (holdingInput) {
+        holdingInput.addEventListener('input', function (e) {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (value > 1) this.value = 1;
+            if (isNaN(value)) this.value = 0;
+        });
+    }
 
-  
-    document.getElementById('searchHolding').addEventListener('input', function (e) {
-        let value = parseFloat(this.value);
-        if (value < 0) this.value = 0;
-        if (value > 1) this.value = 1;
-        if (isNaN(value)) this.value = '';
-    });
+    const searchInput = document.getElementById('searchHolding');
+    if (searchInput) {
+        searchInput.addEventListener('input', function (e) {
+            let value = parseFloat(this.value);
+            if (value < 0) this.value = 0;
+            if (value > 1) this.value = 1;
+            if (isNaN(value)) this.value = '';
+        });
+    }
 }
