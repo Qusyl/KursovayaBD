@@ -1,5 +1,6 @@
 ﻿using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KursovayaBD.Controllers
@@ -14,7 +15,7 @@ namespace KursovayaBD.Controllers
         {
             this.repository = repository;
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<OwningsModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -30,7 +31,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message + $"от {nameof(GetAllOwnings)}");
             }
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(OwningsModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -51,7 +52,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message + $"от {nameof(GetAllOwnings)}");
             }
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search")]
         [ProducesResponseType(typeof(IEnumerable<OwningsModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -77,7 +78,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message + $"от {nameof(GetAllOwnings)}");
             }
         }
-
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ProducesResponseType(typeof(OwningsModel), statusCode: StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -100,6 +101,7 @@ namespace KursovayaBD.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
         [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -131,6 +133,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка обновления : {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin,User")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

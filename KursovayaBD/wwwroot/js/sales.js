@@ -5,7 +5,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loadBestProfitCount();
     setupEventListeners();
 });
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 async function loadSales() {
     const table = document.getElementById('salesTable');
     const loading = document.getElementById('loading');
@@ -15,7 +21,7 @@ async function loadSales() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -73,7 +79,7 @@ function renderSales(sales) {
 
 async function loadBestProfitCount() {
     try {
-        const response = await fetch(`${API_URL}/best-profit-products-count`);
+        const response = await fetch(`${API_URL}/best-profit-products-count`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -108,7 +114,7 @@ async function searchSales() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/search?profit=${profit}`);
+        const response = await fetch(`${API_URL}/search?profit=${profit}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -173,7 +179,7 @@ function closeModal() {
 
 async function loadSaleForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Продажа не найдена');
 
         const sale = await response.json();
@@ -236,9 +242,7 @@ async function saveSale(event) {
     
         let response = await fetch(`${API_URL}/${saleId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(sale)
         });
 
@@ -247,9 +251,7 @@ async function saveSale(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(sale)
                 });
 
@@ -282,7 +284,8 @@ async function deleteSale(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {

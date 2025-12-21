@@ -2,6 +2,7 @@
 using KursovayaBD.Application.Services.IService;
 using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KursovayaBD.Controllers
@@ -20,6 +21,7 @@ namespace KursovayaBD.Controllers
             this.repository = repository;
             this.salesService = salesService;
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("best-profit-products-count")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -40,6 +42,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(500, $"Ошибка: {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<SalesModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -57,7 +60,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Неизвестная ошибка: {ex.Message}");
             }
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ProductModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -79,6 +82,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Неизвестная ошибка в {nameof(GetSalesById)}: " + ex.Message);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ProducesResponseType(typeof(SalesModel), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -102,7 +106,7 @@ namespace KursovayaBD.Controllers
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -137,7 +141,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Неизвестная ошибка в методе {nameof(UpdateSales)}: {ex.Message}");
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -161,7 +165,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Неизвестная ошибка: {ex.Message}");
             }
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search")]
         [ProducesResponseType(typeof(IEnumerable<SalesModel>), StatusCodes.Status200OK)]
 

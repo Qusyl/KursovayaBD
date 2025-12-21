@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\css\login.css" />
     <Content Remove="wwwroot\css\shop.css" />
     <Content Remove="wwwroot\js\audit.js" />
+    <Content Remove="wwwroot\js\auth.js" />
     <Content Remove="wwwroot\js\owner.js" />
     <Content Remove="wwwroot\js\ownings.js" />
     <Content Remove="wwwroot\js\product.js" />
@@ -19,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
       <PrivateAssets>all</PrivateAssets>
@@ -33,7 +36,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\css\login.css">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="wwwroot\css\shop.css" />
+    <TypeScriptCompile Include="wwwroot\js\auth.js">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="wwwroot\js\owner.js">
       <SubType>Code</SubType>
     </TypeScriptCompile>

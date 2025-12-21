@@ -4,7 +4,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loadWarehouse();
     setupEventListeners();
 });
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 async function loadWarehouse() {
     const table = document.getElementById('warehouseTable');
     const loading = document.getElementById('loading');
@@ -14,7 +20,7 @@ async function loadWarehouse() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -99,7 +105,7 @@ async function searchWarehouse() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/search?name=${encodeURIComponent(searchTerm)}`);
+        const response = await fetch(`${API_URL}/search?name=${encodeURIComponent(searchTerm)}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -153,7 +159,7 @@ async function getTotalStock() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/total-stock/${shopId}`);
+        const response = await fetch(`${API_URL}/total-stock/${shopId}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -207,7 +213,7 @@ function closeModal() {
 
 async function loadWarehouseForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Товар на складе не найден');
 
         const item = await response.json();
@@ -279,9 +285,7 @@ async function saveWarehouse(event) {
       
         let response = await fetch(`${API_URL}/${warehouseId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(item)
         });
 
@@ -290,9 +294,7 @@ async function saveWarehouse(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(item)
                 });
 
@@ -324,7 +326,8 @@ async function deleteWarehouse(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {

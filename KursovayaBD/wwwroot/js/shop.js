@@ -1,12 +1,18 @@
 ﻿
 const API_URL = 'https://localhost:7071/api/Shop';
 
-
 document.addEventListener('DOMContentLoaded', function () {
     loadShops();
     setupEventListeners();
 });
 
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 
 async function loadShops() {
     const table = document.getElementById('shopsTable');
@@ -17,15 +23,15 @@ async function loadShops() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+        });
 
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
 
         const shops = await response.json();
 
-        if (shops.length === 0) {
+        if (!shops || shops.length === 0) {
             empty.style.display = 'block';
             table.style.display = 'none';
         } else {
@@ -33,14 +39,12 @@ async function loadShops() {
             table.style.display = '';
             renderShops(shops);
         }
-
     } catch (error) {
         showError('Не удалось загрузить магазины: ' + error.message);
     } finally {
         loading.style.display = 'none';
     }
 }
-
 
 function renderShops(shops) {
     const table = document.getElementById('shopsTable');
@@ -71,10 +75,8 @@ function renderShops(shops) {
     });
 }
 
-
 async function searchShops() {
     const searchTerm = document.getElementById('searchShop').value.toLowerCase();
-
     if (!searchTerm) {
         loadShops();
         return;
@@ -87,14 +89,10 @@ async function searchShops() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
 
         const shops = await response.json();
-
         const filtered = shops.filter(shop =>
             shop.shopName?.toLowerCase().includes(searchTerm) ||
             shop.shopType?.toLowerCase().includes(searchTerm) ||
@@ -109,7 +107,6 @@ async function searchShops() {
             table.style.display = '';
             renderShops(filtered);
         }
-
     } catch (error) {
         showError('Ошибка поиска: ' + error.message);
     } finally {
@@ -117,18 +114,15 @@ async function searchShops() {
     }
 }
 
-
 function clearSearch() {
     document.getElementById('searchShop').value = '';
     loadShops();
 }
 
-
 function openModal(shopId = null) {
     const modal = document.getElementById('modal');
     const title = document.getElementById('modalTitle');
     const form = document.getElementById('shopForm');
-
     form.reset();
 
     if (shopId) {
@@ -136,9 +130,7 @@ function openModal(shopId = null) {
         loadShopForEdit(shopId);
     } else {
         title.textContent = 'Добавить магазин';
-        
         document.getElementById('fund').value = 0;
-      
         document.getElementById('shopId').value = '';
     }
 
@@ -152,7 +144,12 @@ function closeModal() {
 
 async function loadShopForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader()
+        }
+        });
         if (!response.ok) throw new Error('Магазин не найден');
 
         const shop = await response.json();
@@ -221,8 +218,10 @@ async function saveShop(event) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                ...getAuthHeader()
             },
-            body: JSON.stringify(shop)
+            body: JSON.stringify(shop),
+            
         });
 
         if (!response.ok) {
@@ -232,8 +231,10 @@ async function saveShop(event) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        ...getAuthHeader()
                     },
-                    body: JSON.stringify(shop)
+                    body: JSON.stringify(shop),
+
                 });
 
                 if (!response.ok) {
@@ -265,12 +266,16 @@ async function deleteShop(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader()
+            }
         });
 
         if (!response.ok) {
             throw new Error(`Ошибка ${response.status}`);
-        }
+    }
 
         loadShops();
         showSuccess('Магазин удален');
@@ -304,29 +309,24 @@ function showError(message) {
 
 
 function setupEventListeners() {
-   
-    document.getElementById('searchShop').addEventListener('input', searchShops);
+    const searchInput = document.getElementById('searchShop');
+    if (searchInput) searchInput.addEventListener('input', searchShops);
 
+    const btnClear = document.querySelector('.btn-clear-search');
+    if (btnClear) btnClear.addEventListener('click', clearSearch);
 
-    document.querySelector('.btn-clear-search').addEventListener('click', clearSearch);
+    const btnAdd = document.querySelector('.btn-add');
+    if (btnAdd) btnAdd.addEventListener('click', () => openModal());
 
-  
-    document.querySelector('.btn-add').addEventListener('click', () => openModal());
-
-   
-    document.getElementById('modal').addEventListener('click', function (e) {
-        if (e.target === this || e.target.classList.contains('btn-close')) {
-            closeModal();
-        }
+    const modal = document.getElementById('modal');
+    if (modal) modal.addEventListener('click', function (e) {
+        if (e.target === this || e.target.classList.contains('btn-close')) closeModal();
     });
 
-  
-    document.getElementById('shopForm').addEventListener('submit', saveShop);
+    const shopForm = document.getElementById('shopForm');
+    if (shopForm) shopForm.addEventListener('submit', saveShop);
 
-   
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
+        if (e.key === 'Escape') closeModal();
     });
 }

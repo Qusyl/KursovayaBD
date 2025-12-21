@@ -2,6 +2,7 @@
 using KursovayaBD.Application.Services.IService;
 using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KursovayaBD.Controllers
@@ -20,6 +21,7 @@ namespace KursovayaBD.Controllers
             this.repository = repository;
             this.warehouseService = warehouseService;
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("total-stock/{shopId}")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -42,6 +44,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(500, $"Ошибка: {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<WarehouseModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -57,6 +60,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка во время получения данных о складах! {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(WarehouseModel), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -75,7 +79,7 @@ namespace KursovayaBD.Controllers
             }
 
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ProducesResponseType(typeof(WarehouseModel), statusCode: StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -98,6 +102,7 @@ namespace KursovayaBD.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -129,6 +134,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка обновления : {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -152,6 +158,7 @@ namespace KursovayaBD.Controllers
 
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search")]
         [ProducesResponseType(typeof(IEnumerable<WarehouseModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]

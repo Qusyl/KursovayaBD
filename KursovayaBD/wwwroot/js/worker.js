@@ -18,7 +18,7 @@ async function loadWorkers() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -86,7 +86,13 @@ function renderWorkers(workers) {
         table.appendChild(row);
     });
 }
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 
 async function loadWorkersWithShops() {
     const table = document.getElementById('workersTable');
@@ -101,7 +107,7 @@ async function loadWorkersWithShops() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/workers-with-shops`);
+        const response = await fetch(`${API_URL}/workers-with-shops`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -311,7 +317,7 @@ async function searchWorkers() {
                 searchUrl = `${API_URL}/search/name?name=${encodeURIComponent(searchTerm)}`;
         }
 
-        const response = await fetch(searchUrl);
+        const response = await fetch(searchUrl, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -422,7 +428,7 @@ function closeModal() {
 
 async function loadWorkerForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Работник не найден');
 
         const worker = await response.json();
@@ -501,9 +507,7 @@ async function saveWorker(event) {
     try {
         let response = await fetch(`${API_URL}/${workerId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(worker)
         });
 
@@ -511,9 +515,7 @@ async function saveWorker(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(worker)
                 });
 
@@ -550,7 +552,8 @@ async function deleteWorker(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {

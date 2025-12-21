@@ -1,5 +1,6 @@
 ﻿using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KursovayaBD.Controllers
@@ -14,7 +15,7 @@ namespace KursovayaBD.Controllers
         {
             this.repository = repository;
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductAuditModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -30,7 +31,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message + $"от {nameof(GetAllAudit)}");
             }
         }
-
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search/new")]
         [ProducesResponseType(typeof(IEnumerable<ProductAuditModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -56,6 +57,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message + $"от {nameof(GetAllAudit)}");
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search/old")]
         [ProducesResponseType(typeof(IEnumerable<ProductAuditModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

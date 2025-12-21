@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="app">
-   
+
         <aside class="sidebar">
             <div class="logo">
                 <i class="fas fa-database"></i>
@@ -56,27 +56,40 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user">
-                    <i class="fas fa-user-circle"></i>
-                    <div>
-                        <strong>Администратор</strong>
-                        <small>Курсовая работа</small>
-                    </div>
-                </div>
+                <button id="authBtn">ВОЙТИ</button>
+                <div id="userRole"></div>
             </div>
         </aside>
 
-      
+
         <main class="content">
             <header class="header">
                 <h2>Добро пожаловать</h2>
                 <p>Система управления базой данных для торговой сети</p>
             </header>
 
-           
+
         </main>
     </div>
 
-    <script src="../js/main.js"></script>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+
+            <h2>Вход</h2>
+
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Логин" required>
+                <input type="password" id="password" placeholder="Пароль" required>
+
+                <button type="submit">Войти</button>
+            </form>
+
+            <p id="error" class="error"></p>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
+    <script src="js/index-auth.js"></script>
 </body>
 </html>

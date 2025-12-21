@@ -2,6 +2,7 @@
 using KursovayaBD.Application.Services.IService;
 using KursovayaBD.Models;
 using KursovayaBD.Repository.RepositoryImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,7 @@ namespace KursovayaBD.Controllers
             this.repository = repository;
             this.workerService = _workerService;
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("workers-with-shops")]
         [ProducesResponseType(typeof(IEnumerable<WorkerWithShops>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -52,6 +54,7 @@ namespace KursovayaBD.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<WorkerModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -67,6 +70,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка во время получения данных о работнике! {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(WorkerModel), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +89,7 @@ namespace KursovayaBD.Controllers
             }
 
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ProducesResponseType(typeof(WorkerModel), statusCode: StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,6 +112,7 @@ namespace KursovayaBD.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -148,6 +153,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка обновления : {ex.Message}");
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -171,6 +177,7 @@ namespace KursovayaBD.Controllers
 
             }
         }
+        [Authorize(Roles = "Admin,User,Guest")]
         [HttpGet("search/name")]
         [ProducesResponseType(typeof(IEnumerable<WorkerModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -191,6 +198,7 @@ namespace KursovayaBD.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка поиска : {ex.Message}");
             }
         }
+             [Authorize(Roles = "Admin,User,Guest")]
             [HttpGet("search/surname")]
             [ProducesResponseType(typeof(IEnumerable<WorkerModel>), statusCode: StatusCodes.Status200OK)]
             [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -211,8 +219,8 @@ namespace KursovayaBD.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка поиска : {ex.Message}");
                 }
             }
-  
-    [HttpGet("search/lastname")]
+        [Authorize(Roles = "Admin,User,Guest")]
+        [HttpGet("search/lastname")]
         [ProducesResponseType(typeof(IEnumerable<WorkerModel>), statusCode: StatusCodes.Status200OK)]
         [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SearchWorkerByLastName([FromQuery] string Lastname)

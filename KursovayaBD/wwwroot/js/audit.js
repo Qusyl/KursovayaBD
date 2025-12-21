@@ -4,7 +4,13 @@ const API_URL = 'https://localhost:7071/api/ProductAudit';
 
 let currentSearchType = 'new';
 
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 document.addEventListener('DOMContentLoaded', function () {
     loadAudit();
     setupEventListeners();
@@ -19,7 +25,7 @@ async function loadAudit() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': "application/json", ...getAuthHeader() }});
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -132,7 +138,7 @@ async function searchAudit() {
             searchUrl = `${API_URL}/search/new?name=${encodeURIComponent(searchTerm)}`;
         }
 
-        const response = await fetch(searchUrl);
+        const response = await fetch(searchUrl, { headers: { 'Content-Type': "application/json" }, ...getAuthHeader() });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);

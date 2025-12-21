@@ -4,7 +4,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loadOwnings();
     setupEventListeners();
 });
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 async function loadOwnings() {
     const table = document.getElementById('owningsTable');
     const loading = document.getElementById('loading');
@@ -14,7 +20,7 @@ async function loadOwnings() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -82,7 +88,7 @@ async function searchOwnings() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(`${API_URL}/search?holding=${holding}`);
+        const response = await fetch(`${API_URL}/search?holding=${holding}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -138,7 +144,7 @@ function closeModal() {
 
 async function loadOwningForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Владение не найдено');
 
         const owning = await response.json();
@@ -199,9 +205,7 @@ async function saveOwnings(event) {
        
         let response = await fetch(`${API_URL}/${owningId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(owning)
         });
 
@@ -210,9 +214,7 @@ async function saveOwnings(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(owning)
                 });
 
@@ -244,7 +246,8 @@ async function deleteOwning(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {

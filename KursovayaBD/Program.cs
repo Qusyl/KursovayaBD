@@ -3,6 +3,9 @@ using KursovayaBD.Application.Services;
 using KursovayaBD.Application.Services.IService;
 using KursovayaBD.Repository.RepositoryImpl;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -34,6 +37,30 @@ builder.Services.AddScoped<ISalesService, SalesDbSevice>();
 builder.Services.AddScoped<IWarehouseService, WarehouseDbService>();
 builder.Services.AddScoped<IOwnerService,OwnerDbService>();
 builder.Services.AddScoped<IWorkerService,WorkerDbService>();
+
+var jwtsetting = builder.Configuration.GetSection("Jwt");
+
+var key = Encoding.UTF8.GetBytes(jwtsetting["Key"]!);
+
+builder.Services.AddAuthentication(optinons =>
+{
+    optinons.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    optinons.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtsetting["Issuer"],
+            ValidAudience = jwtsetting["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+
+        };
+    });
 
 builder.Services.AddControllers();
 
@@ -67,6 +94,7 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

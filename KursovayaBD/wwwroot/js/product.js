@@ -14,7 +14,7 @@ async function loadProducts() {
         if (loading) loading.style.display = 'block';
         if (table) table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -39,7 +39,13 @@ async function loadProducts() {
         if (loading) loading.style.display = 'none';
     }
 }
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 function renderProducts(products) {
     const table = document.getElementById('productsTable');
     if (!table) return;
@@ -79,7 +85,7 @@ async function searchProducts() {
     const table = document.getElementById('productsTable');
 
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) {
             throw new Error('Ошибка загрузки данных');
         }
@@ -150,7 +156,7 @@ function closeModal() {
 
 async function loadProductForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Товар не найден');
 
         const product = await response.json();
@@ -227,9 +233,7 @@ async function saveProduct(event) {
      
         let response = await fetch(`${API_URL}/${productId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(product)
         });
 
@@ -238,9 +242,7 @@ async function saveProduct(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(product)
                 });
 
@@ -272,7 +274,8 @@ async function deleteProduct(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {

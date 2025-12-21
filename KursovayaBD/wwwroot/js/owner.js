@@ -5,7 +5,13 @@ document.addEventListener('DOMContentLoaded', function () {
     loadOwners();
     setupEventListeners();
 });
-
+function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return { 'Authorization': `Bearer ${token}` };
+    }
+    return {};
+}
 async function loadOwners() {
     const table = document.getElementById('ownersTable');
     const loading = document.getElementById('loading');
@@ -15,7 +21,7 @@ async function loadOwners() {
         loading.style.display = 'block';
         table.innerHTML = '';
 
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -104,7 +110,7 @@ async function searchOwners() {
                 searchUrl = `${API_URL}/search/name?term=${encodeURIComponent(searchTerm)}`;
         }
 
-        const response = await fetch(searchUrl);
+        const response = await fetch(searchUrl, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
 
         if (!response.ok) {
             throw new Error('Поиск не доступен');
@@ -248,7 +254,7 @@ function closeModal() {
 
 async function loadOwnerForEdit(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Владелец не найден');
 
         const owner = await response.json();
@@ -318,9 +324,7 @@ async function saveOwner(event) {
     try {
         let response = await fetch(`${API_URL}/${ownerId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
             body: JSON.stringify(owner)
         });
 
@@ -328,9 +332,7 @@ async function saveOwner(event) {
             if (response.status === 404) {
                 response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                     body: JSON.stringify(owner)
                 });
 
@@ -362,7 +364,7 @@ async function deleteOwner(id) {
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE', headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
         });
 
         if (!response.ok) {
@@ -383,7 +385,7 @@ function editOwner(id) {
 
 async function viewOwnerDetails(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         if (!response.ok) throw new Error('Данные не найдены');
 
         const owner = await response.json();
@@ -422,7 +424,7 @@ async function showOwnersWithNonProfitShops() {
             loading.style.display = 'block';
         }
 
-        const response = await fetch(`${API_URL}/non-profit-shops`);
+        const response = await fetch(`${API_URL}/non-profit-shops`, { headers: { 'Content-Type': 'application/json', ...getAuthHeader() } });
         console.log('Response status:', response.status);
 
         if (!response.ok) {
